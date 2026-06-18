@@ -1,0 +1,75 @@
+{
+	"name": "silver_as_despachos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Silver/bja"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "despacho_id",
+				"type": "varchar"
+			},
+			{
+				"name": "recepcion_id",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "almacen_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transportista_id",
+				"type": "varchar"
+			},
+			{
+				"name": "vehiculo_id",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_despacho",
+				"type": "date"
+			},
+			{
+				"name": "cantidad_despachada",
+				"type": "decimal",
+				"precision": 12,
+				"scale": 2
+			},
+			{
+				"name": "centro_destino",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "responsable",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_guia_despacho",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_llegada",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "as_despachos"
+		}
+	}
+}

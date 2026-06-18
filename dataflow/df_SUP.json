@@ -1,0 +1,328 @@
+{
+	"name": "df_SUP",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_boletas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_catalogo_paquetes_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_controles_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_entregas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_establecimientos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_inscripciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_sup_catalogo_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				},
+				{
+					"name": "sink3"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				},
+				{
+					"name": "sink5"
+				},
+				{
+					"name": "sink6"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "derivedColumn4"
+				},
+				{
+					"name": "derivedColumn5"
+				},
+				{
+					"name": "derivedColumn6"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          boleta_id as string,",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          paquete_id as string,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as string,",
+				"          costo_estimado_bs as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source(output(",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source(output(",
+				"          entrega_id as string,",
+				"          boleta_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          paquete_id as string,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as string,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as string,",
+				"          fecha_proxima_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source(output(",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source(output(",
+				"          inscripcion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          fecha_inscripcion as string,",
+				"          semana_gestacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source6",
+				"source1 derive(ci_beneficiaria = upper(trim(regexReplace(regexReplace(ci_beneficiaria, '^[a-zA-Z]+', ''), '-', ''))),",
+				"          nro_boleta = upper(trim(nro_boleta)),",
+				"          fecha_emision = iif(isNull(fecha_emision) || trim(fecha_emision) == '', toDate(null()),   iif(locate('/', fecha_emision) > 0,     iif(toInteger(left(trim(fecha_emision), 2)) > 12,       toDate(fecha_emision, 'dd/MM/yyyy'),       toDate(fecha_emision, 'MM/dd/yyyy')),     iif(toInteger(left(trim(fecha_emision), 4)) > 31,       toDate(fecha_emision, 'yyyy-MM-dd'),       toDate(fecha_emision, 'dd-MM-yyyy')))),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"source2 derive(nombre = trim(nombre),",
+				"          contenido = trim(contenido),",
+				"          peso_estandar_kg = toDecimal(peso_estandar_kg),",
+				"          costo_estimado_bs = toDecimal(costo_estimado_bs),",
+				"          paquete_id = toInteger(paquete_id)) ~> derivedColumn2",
+				"source3 derive(ci_beneficiaria = upper(trim(regexReplace(regexReplace(ci_beneficiaria, '^[a-zA-Z]+', ''), '-', ''))),",
+				"          nro_control = toInteger(nro_control),",
+				"          fecha_control = iif(isNull(fecha_control) || trim(fecha_control) == '', toDate(null()),   iif(locate('/', fecha_control) > 0,     iif(toInteger(left(trim(fecha_control), 2)) > 12,       toDate(fecha_control, 'dd/MM/yyyy'),       toDate(fecha_control, 'MM/dd/yyyy')),     iif(toInteger(left(trim(fecha_control), 4)) > 31,       toDate(fecha_control, 'yyyy-MM-dd'),       toDate(fecha_control, 'dd-MM-yyyy')))),",
+				"          semana_gestacion = iif(isNull(semana_gestacion) || toString(semana_gestacion) == '', toInteger(null()), toInteger(semana_gestacion)),",
+				"          peso_madre_kg = iif(isNull(peso_madre_kg) || toString(peso_madre_kg) == '', toFloat(null()), toFloat(peso_madre_kg)),",
+				"          presion_arterial = trim(presion_arterial)) ~> derivedColumn3",
+				"source4 derive(ci_beneficiaria = upper(\r",
+				"  regexReplace(\r",
+				"    regexReplace(ci_beneficiaria, '^(sc|tj|pt|bn)', ''),\r",
+				"    '[-\\\\s]', ''\r",
+				"  )\r",
+				"),",
+				"          fecha_entrega = iif(regexMatch(toString(fecha_entrega), '\\\\d{4}-\\\\d{2}-\\\\d{2}'),\r",
+				"  toDate(toString(fecha_entrega), 'yyyy-MM-dd'),\r",
+				"  iif(regexMatch(toString(fecha_entrega), '\\\\d{2}-\\\\d{2}-\\\\d{4}'),\r",
+				"    toDate(toString(fecha_entrega), 'dd-MM-yyyy'),\r",
+				"    iif(regexMatch(toString(fecha_entrega), '\\\\d{2}/\\\\d{2}/\\\\d{4}'),\r",
+				"      toDate(toString(fecha_entrega), 'dd/MM/yyyy'),\r",
+				"      toDate(null())\r",
+				"    )\r",
+				"  )\r",
+				"),",
+				"          fecha_proxima_entrega = iif(isNull(fecha_proxima_entrega) || length(trim(toString(fecha_proxima_entrega))) == 0,   toDate(null()),   iif(regexMatch(toString(fecha_proxima_entrega), '\\\\d{4}-\\\\d{2}-\\\\d{2}'),     toDate(toString(fecha_proxima_entrega), 'yyyy-MM-dd'),     iif(regexMatch(toString(fecha_proxima_entrega), '\\\\d{2}-\\\\d{2}-\\\\d{4}'),       toDate(toString(fecha_proxima_entrega), 'dd-MM-yyyy'),       iif(regexMatch(toString(fecha_proxima_entrega), '\\\\d{2}/\\\\d{2}/\\\\d{4}'),         toDate(toString(fecha_proxima_entrega), 'dd/MM/yyyy'),         toDate(null())       )     )   ) ),",
+				"          lote_produccion = trim(lote_produccion),",
+				"          entrega_id = toInteger(entrega_id),",
+				"          boleta_id = toInteger(boleta_id),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          paquete_id = toInteger(paquete_id),",
+				"          peso_paquete_kg = toDecimal(peso_paquete_kg)) ~> derivedColumn4",
+				"source5 derive(nombre = trim(nombre),",
+				"          codigo_snis = upper(trim(codigo_snis)),",
+				"          estado = initCap(lower(trim(estado)))) ~> derivedColumn5",
+				"source6 derive(ci_beneficiaria = trim(toString(ci_beneficiaria)),",
+				"          fecha_inscripcion = toDate(toString(fecha_inscripcion), 'yyyy-MM-dd'),",
+				"          estado = initCap(lower(trim(toString(estado)))),",
+				"          semana_gestacion = iif(toInteger(semana_gestacion) >= 1 && toInteger(semana_gestacion) <= 42,   toInteger(semana_gestacion),   toInteger(null()) )) ~> derivedColumn6",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          boleta_id as integer,",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as date,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_id,",
+				"          ci_beneficiaria,",
+				"          nro_boleta,",
+				"          fecha_emision,",
+				"          estado",
+				"     )) ~> sink1",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          paquete_id as integer,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as decimal(6,2),",
+				"          costo_estimado_bs as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          paquete_id,",
+				"          nombre,",
+				"          contenido,",
+				"          peso_estandar_kg,",
+				"          costo_estimado_bs",
+				"     )) ~> sink2",
+				"derivedColumn3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3",
+				"derivedColumn4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_id as integer,",
+				"          boleta_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          paquete_id as integer,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as date,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as decimal(6,2),",
+				"          fecha_proxima_entrega as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_id,",
+				"          boleta_id,",
+				"          ci_beneficiaria,",
+				"          establecimiento_id,",
+				"          paquete_id,",
+				"          paquete_nombre,",
+				"          fecha_entrega,",
+				"          lote_produccion,",
+				"          peso_paquete_kg,",
+				"          fecha_proxima_entrega",
+				"     )) ~> sink4",
+				"derivedColumn5 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink5",
+				"derivedColumn6 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          inscripcion_id,",
+				"          ci_beneficiaria,",
+				"          establecimiento_id,",
+				"          fecha_inscripcion,",
+				"          semana_gestacion,",
+				"          estado",
+				"     )) ~> sink6"
+			]
+		}
+	}
+}

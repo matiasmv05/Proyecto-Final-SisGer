@@ -1,0 +1,45 @@
+{
+	"name": "silver_spl_supermercado",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Silver/spl"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "supermercado_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cadena",
+				"type": "varchar"
+			},
+			{
+				"name": "sucursal",
+				"type": "varchar"
+			},
+			{
+				"name": "municipio",
+				"type": "varchar"
+			},
+			{
+				"name": "direccion",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "spl_supermercados"
+		}
+	}
+}

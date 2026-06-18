@@ -1,0 +1,354 @@
+{
+	"name": "df_BJA",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_controles_pediatricos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "bja_controles_prenatales_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "bja_establecimientos_salud_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "bja_inscripciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "bja_pagos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				},
+				{
+					"dataset": {
+						"referenceName": "bja_partos_cv",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				},
+				{
+					"name": "sink2"
+				},
+				{
+					"name": "sink3"
+				},
+				{
+					"name": "sink4"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "sink5"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "sink6"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "derivedColumn4"
+				},
+				{
+					"name": "derivedColumn5"
+				},
+				{
+					"name": "derivedColumn6"
+				},
+				{
+					"name": "derivedColumn7"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          peso_nino_kg as string,",
+				"          talla_nino_cm as string,",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          control_prenatal_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source(output(",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source(output(",
+				"          inscripcion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          fecha_inscripcion as string,",
+				"          semana_gestacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source(output(",
+				"          pago_id as string,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as string,",
+				"          fecha_pago as string,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source(output(",
+				"          parto_id as string,",
+				"          ci_madre as string,",
+				"          ci_recien_nacido as string,",
+				"          establecimiento_id as string,",
+				"          fecha_parto as string,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as string,",
+				"          talla_nacimiento_cm as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source6",
+				"source1 derive(resultado = upper(regexReplace(resultado, '\\\\s+', '')),",
+				"          vacuna_aplicada = upper(regexReplace(vacuna_aplicada, '\\\\s+', '')),",
+				"          ci_nino = upper(trim(regexReplace(ci_nino, '[^a-zA-Z0-9]', '')))\r",
+				",",
+				"          ci_madre = upper(trim(regexReplace(ci_madre, '[^a-zA-Z0-9]', ''))),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          fecha_control = toDate(   iif(like(fecha_control, '__/__/____'),     iif(toInteger(left(fecha_control,2)) > 12,       fecha_control,       concat(substring(fecha_control,4,2), '/', left(fecha_control,2), '/', right(fecha_control,4))     ),     iif(like(fecha_control, '__-__-____'),       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       fecha_control     )   ),   'yyyy-MM-dd' )) ~> derivedColumn1",
+				"source2 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+				"          fecha_control = toDate(   iif(like(fecha_control, '__/__/____'),     iif(toInteger(left(fecha_control,2)) > 12,       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       concat(right(fecha_control,4), '-', left(fecha_control,2), '-', substring(fecha_control,4,2))     ),     iif(like(fecha_control, '__-__-____'),       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       fecha_control     )   ),   'yyyy-MM-dd' ),",
+				"          presion_arterial = trim(regexReplace(presion_arterial, '\\\\s+', '')),",
+				"          resultado = iif(isNull(trim(resultado)) || length(trim(resultado)) == 0,   'Sin Dato',   iif(like(lower(trim(resultado)), '%normal%'),     'Normal',     iif(like(lower(trim(resultado)), '%riesgo alto%') || like(lower(trim(resultado)), '%riesg%alto%'),       'Riesgo Alto',       iif(like(lower(trim(resultado)), '%riesgo moderado%'),         'Riesgo Moderado',         iif(like(lower(trim(resultado)), '%riesgo bajo%') || like(lower(trim(resultado)), '%riesgoo bajo%'),           'Riesgo Bajo',           initCap(lower(trim(resultado)))         )       )     )   ) ),",
+				"          peso_madre_kg = toFloat(peso_madre_kg),",
+				"          semana_gestacion = toInteger(semana_gestacion),",
+				"          nro_control = toInteger(nro_control)) ~> derivedColumn2",
+				"derivedColumn1 derive(vacuna_aplicada = lower(trim(regexReplace(vacuna_aplicada, '\\\\s+', ' '))),",
+				"          resultado = iif(isNull(trim(resultado)) || length(trim(resultado)) == 0,  'Sin Dato',  iif(lower(trim(resultado)) == 'normal' || lower(trim(resultado)) == 'norml' || lower(trim(resultado)) == 'normaal' || lower(trim(resultado)) == 'noraml' || lower(trim(resultado)) == 'norrmal' || lower(trim(resultado)) == 'nromal',    'Normal',    iif(lower(trim(resultado)) == 'bajo peso' || lower(trim(resultado)) == 'baja peso',      'Bajo Peso',      iif(like(lower(trim(resultado)), '%desnutri%leve%'),        'Desnutrición Leve',        iif(like(lower(trim(resultado)), '%desnutri%moderada%'),          'Desnutrición Moderada',          initCap(lower(trim(resultado)))        )      )    )  )),",
+				"          nro_control = toInteger(nro_control),",
+				"          peso_nino_kg = toDecimal(peso_nino_kg),",
+				"          talla_nino_cm = toDecimal(talla_nino_cm)) ~> derivedColumn3",
+				"source3 derive(codigo_snis = upper(trim(codigo_snis)),",
+				"          nombre = trim(regexReplace(nombre, '\\\\s+', ' ')),",
+				"          tipo = iif(like(lower(trim(tipo)), '%hospital%'), 'Hospital',\r",
+				"  iif(like(lower(trim(tipo)), '%centro%'), 'Centro de Salud',\r",
+				"    iif(like(lower(trim(tipo)), '%puesto%'), 'Puesto de Salud',\r",
+				"      initCap(lower(trim(tipo)))\r",
+				"    )\r",
+				"  )\r",
+				"),",
+				"          nivel_atencion = iif(like(lower(trim(nivel_atencion)), '%primer%'), 'Primer Nivel',   iif(like(lower(trim(nivel_atencion)), '%segundo%'), 'Segundo Nivel',     iif(like(lower(trim(nivel_atencion)), '%tercer%'), 'Tercer Nivel',       initCap(lower(trim(nivel_atencion)))     )   ) ),",
+				"          departamento = iif(trim(departamento) == 'LP', 'La Paz',   iif(trim(departamento) == 'CB', 'Cochabamba',     iif(trim(departamento) == 'SC', 'Santa Cruz',       iif(trim(departamento) == 'OR', 'Oruro',         iif(trim(departamento) == 'PT', 'Potosí',           iif(trim(departamento) == 'TJ', 'Tarija',             iif(trim(departamento) == 'CH', 'Chuquisaca',               iif(trim(departamento) == 'BN', 'Beni',                 iif(trim(departamento) == 'PD', 'Pando',                   trim(departamento)                 )               )             )           )         )       )     )   ) ),",
+				"          estado = iif(like(lower(trim(estado)), '%activo%'), 'Activo',   iif(like(lower(trim(estado)), '%inactivo%'), 'Inactivo',     initCap(lower(trim(estado)))   ) )) ~> derivedColumn4",
+				"source4 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+				"          inscripcion_id = toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'),",
+				"          fecha_inscripcion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion)),",
+				"          semana_gestacion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion)),",
+				"          estado = iif(like(lower(trim(estado)), '%completada%'), 'Completada',   iif(like(lower(trim(estado)), '%activa%') && !like(lower(trim(estado)), '%in%'), 'Activa',     iif(like(lower(trim(estado)), '%inactiva%'), 'Inactiva',       initCap(lower(trim(estado)))     )   ) )) ~> derivedColumn5",
+				"source5 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+				"          concepto_pago = iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%prenatal%1%') || like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%rpenatal%1%') || like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%prental%1%'),   'Control Prenatal 1',   iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%2%'),     'Control Prenatal 2',     iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%3%'),       'Control Prenatal 3',       iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%4%'),         'Control Prenatal 4',         iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%parto%'),           'Parto Institucional',           initCap(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))))         )       )     )   ) ),",
+				"          monto_bs = iif(toDecimal(monto_bs) == 50 || toDecimal(monto_bs) == 120, toDecimal(monto_bs), toDecimal(null())),",
+				"          fecha_pago = toDate(   iif(like(fecha_pago, '__/__/____'),     iif(toInteger(left(fecha_pago,2)) > 12,       concat(right(fecha_pago,4), '-', substring(fecha_pago,4,2), '-', left(fecha_pago,2)),       concat(right(fecha_pago,4), '-', left(fecha_pago,2), '-', substring(fecha_pago,4,2))     ),     iif(like(fecha_pago, '__-__-____'),       concat(right(fecha_pago,4), '-', substring(fecha_pago,4,2), '-', left(fecha_pago,2)),       fecha_pago     )   ),   'yyyy-MM-dd' ),",
+				"          estado_pago = iif(like(lower(trim(estado_pago)), '%pagado%'), 'Pagado',   iif(like(lower(trim(estado_pago)), '%pendiente%'), 'Pendiente',     iif(like(lower(trim(estado_pago)), '%anulado%'), 'Anulado',       initCap(lower(trim(estado_pago)))     )   ) ),",
+				"          canal_pago = iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bancounion%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bancounión%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bncounión%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%banounión%'),   'Banco Unión',   iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transferencia%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transfencia%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transferencía%'),     'Transferencia Bancaria',     iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pagomóvil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pagomovil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%paomóvil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pgomóvil%'),       'Pago Móvil',       iif(isNull(trim(canal_pago)) || length(trim(canal_pago)) == 0,         'Sin Dato',         initCap(lower(trim(canal_pago)))       )     )   ) ),",
+				"          nro_comprobante = iif(isNull(trim(nro_comprobante)) || length(trim(nro_comprobante)) == 0, 'Sin Comprobante', upper(trim(nro_comprobante)))) ~> derivedColumn6",
+				"source6 derive(ci_madre = upper(trim(regexReplace(ci_madre, '[^a-zA-Z0-9]', ''))),",
+				"          ci_recien_nacido = upper(trim(regexReplace(ci_recien_nacido, '[^a-zA-Z0-9]', ''))),",
+				"          fecha_parto = toDate(   iif(like(fecha_parto, '__/__/____'),     iif(toInteger(left(fecha_parto,2)) > 12,       concat(right(fecha_parto,4), '-', substring(fecha_parto,4,2), '-', left(fecha_parto,2)),       concat(right(fecha_parto,4), '-', left(fecha_parto,2), '-', substring(fecha_parto,4,2))     ),     iif(like(fecha_parto, '__-__-____'),       concat(right(fecha_parto,4), '-', substring(fecha_parto,4,2), '-', left(fecha_parto,2)),       fecha_parto     )   ),   'yyyy-MM-dd' ),",
+				"          tipo_parto = iif(like(lower(trim(tipo_parto)), '%natural%') || lower(trim(tipo_parto)) == 'naturl' || lower(trim(tipo_parto)) == 'ntural' || lower(trim(tipo_parto)) == 'naural' || lower(trim(tipo_parto)) == 'natral' || lower(trim(tipo_parto)) == 'natual' || lower(trim(tipo_parto)) == 'natuarl',   'Natural',   iif(like(lower(trim(tipo_parto)), '%ces%rea%') || like(lower(trim(tipo_parto)), '%cse%rea%'),     'Cesárea',     iif(isNull(trim(tipo_parto)) || length(trim(tipo_parto)) == 0,       'Sin Dato',       initCap(lower(trim(tipo_parto)))     )   ) ),",
+				"          peso_nacimiento_kg = iif(toDecimal(peso_nacimiento_kg) < 0.5 || toDecimal(peso_nacimiento_kg) > 6, toDecimal(null()), toDecimal(peso_nacimiento_kg)),",
+				"          talla_nacimiento_cm = iif(toDecimal(talla_nacimiento_cm) < 30 || toDecimal(talla_nacimiento_cm) > 60, toDecimal(null()), toDecimal(talla_nacimiento_cm)),",
+				"          establecimiento_id = toInteger(establecimiento_id)) ~> derivedColumn7",
+				"derivedColumn3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          peso_nino_kg as decimal(5,2),",
+				"          talla_nino_cm as decimal(5,2),",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_pediatrico_id,",
+				"          ci_nino,",
+				"          ci_madre,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          peso_nino_kg,",
+				"          talla_nino_cm,",
+				"          vacuna_aplicada,",
+				"          resultado",
+				"     )) ~> sink1",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          ci_beneficiaria,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          semana_gestacion,",
+				"          peso_madre_kg,",
+				"          presion_arterial,",
+				"          resultado",
+				"     )) ~> sink2",
+				"derivedColumn4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3",
+				"derivedColumn5 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink4",
+				"derivedColumn6 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pago_id as string,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as decimal(10,2),",
+				"          fecha_pago as date,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          pago_id,",
+				"          ci_beneficiaria,",
+				"          concepto_pago,",
+				"          monto_bs,",
+				"          fecha_pago,",
+				"          estado_pago,",
+				"          canal_pago,",
+				"          nro_comprobante",
+				"     )) ~> sink5",
+				"derivedColumn7 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          parto_id as string,",
+				"          ci_madre as string,",
+				"          ci_recien_nacido as string,",
+				"          establecimiento_id as integer,",
+				"          fecha_parto as date,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as decimal(5,2),",
+				"          talla_nacimiento_cm as decimal(5,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          parto_id,",
+				"          ci_madre,",
+				"          ci_recien_nacido,",
+				"          establecimiento_id,",
+				"          fecha_parto,",
+				"          tipo_parto,",
+				"          peso_nacimiento_kg,",
+				"          talla_nacimiento_cm",
+				"     )) ~> sink6"
+			]
+		}
+	}
+}

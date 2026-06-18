@@ -1,0 +1,77 @@
+{
+	"name": "silver_as_recepcione",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Silver/as"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "recepcion_id",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "almacen_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "transportista_id",
+				"type": "varchar"
+			},
+			{
+				"name": "vehiculo_id",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_recepcion",
+				"type": "date"
+			},
+			{
+				"name": "cantidad_recibida",
+				"type": "decimal",
+				"precision": 12,
+				"scale": 2
+			},
+			{
+				"name": "unidad",
+				"type": "varchar"
+			},
+			{
+				"name": "condicion",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "responsable",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_guia_remision",
+				"type": "varchar"
+			},
+			{
+				"name": "temperatura_llegada",
+				"type": "decimal",
+				"precision": 5,
+				"scale": 2
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "as_recepciones"
+		}
+	}
+}
