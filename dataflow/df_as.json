@@ -63,9 +63,17 @@
 					"name": "sink3"
 				},
 				{
+					"dataset": {
+						"referenceName": "silver_as_transportistas",
+						"type": "DatasetReference"
+					},
 					"name": "sink4"
 				},
 				{
+					"dataset": {
+						"referenceName": "silver_as_vehiculos",
+						"type": "DatasetReference"
+					},
 					"name": "sink5"
 				}
 			],
@@ -101,10 +109,22 @@
 					"name": "derivedColumn10"
 				},
 				{
-					"name": "derivedColumn11"
+					"name": "derivedColumn12"
 				},
 				{
-					"name": "derivedColumn12"
+					"name": "alterRow1"
+				},
+				{
+					"name": "alterRow2"
+				},
+				{
+					"name": "alterRow3"
+				},
+				{
+					"name": "alterRow4"
+				},
+				{
+					"name": "alterRow5"
 				}
 			],
 			"scriptLines": [
@@ -266,7 +286,7 @@
 				")))),",
 				"          fecha_llegada = iif(isNull(fecha_llegada) || length(trim(fecha_llegada))==0,     toDate(null()), iif(regexExtract(fecha_llegada,'^(\\\\d{4})-\\\\d{2}-\\\\d{2}$',1) != '',     toDate(fecha_llegada, 'yyyy-MM-dd'), iif(regexExtract(fecha_llegada,'^\\\\d{2}/\\\\d{2}/\\\\d{4}$',0) != '',     toDate(fecha_llegada, 'dd/MM/yyyy'), iif(regexExtract(fecha_llegada,'^\\\\d{2}-\\\\d{2}-\\\\d{4}$',0) != '',     toDate(fecha_llegada, 'dd-MM-yyyy'),     toDate(null()) )))),",
 				"          almacen_id = toInteger(almacen_id),",
-				"          cantidad_despachada = toInteger(cantidad_despachada)) ~> derivedColumn7",
+				"          cantidad_despachada = toDecimal(cantidad_despachada)) ~> derivedColumn7",
 				"source3 derive(estado = upper(regexReplace(estado, '\\\\s+', '')),",
 				"          condicion = upper(regexReplace(condicion, '\\\\s+', '')),",
 				"          responsable = upper(regexReplace(responsable, '[^A-ZÑa-zñ]', '')),",
@@ -303,19 +323,24 @@
 				")))),",
 				"          almacen_id = toInteger(almacen_id),",
 				"          temperatura_llegada = toDecimal(temperatura_llegada),",
-				"          cantidad_recibida = toInteger(cantidad_recibida)) ~> derivedColumn9",
+				"          cantidad_recibida = toDecimal(cantidad_recibida)) ~> derivedColumn9",
 				"source4 derive(razon_social = trim(razon_social),",
 				"          municipio = trim(municipio),",
 				"          contacto = trim(contacto),",
 				"          nit = upper(trim(nit)),",
 				"          estado = upper(trim(estado)),",
 				"          telefono = trim(telefono)) ~> derivedColumn10",
-				"derivedColumn10 derive(nit = iif(regexExtract(nit, '^NIT-\\\\d+$', 0) != '', true(), false())) ~> derivedColumn11",
 				"source5 derive(descripcion = trim(descripcion),",
 				"          placa = upper(trim(placa)),",
 				"          tipo = trim(tipo),",
-				"          estado = trim(estado)) ~> derivedColumn12",
-				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"          estado = trim(estado),",
+				"          capacidad_kg = toDecimal(capacidad_kg)) ~> derivedColumn12",
+				"derivedColumn12 alterRow(upsertIf(true())) ~> alterRow1",
+				"derivedColumn1 alterRow(updateIf(true())) ~> alterRow2",
+				"derivedColumn7 alterRow(updateIf(true())) ~> alterRow3",
+				"derivedColumn9 alterRow(updateIf(true())) ~> alterRow4",
+				"derivedColumn10 alterRow(updateIf(true())) ~> alterRow5",
+				"alterRow2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          almacen_id as integer,",
@@ -328,8 +353,9 @@
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['almacen_id'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
@@ -343,7 +369,7 @@
 				"          capacidad_m3,",
 				"          estado",
 				"     )) ~> sink1",
-				"derivedColumn7 sink(allowSchemaDrift: true,",
+				"alterRow3 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          despacho_id as string,",
@@ -362,8 +388,9 @@
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['despacho_id'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
@@ -383,7 +410,7 @@
 				"          nro_guia_despacho,",
 				"          fecha_llegada",
 				"     )) ~> sink2",
-				"derivedColumn9 sink(allowSchemaDrift: true,",
+				"alterRow4 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          recepcion_id as string,",
@@ -402,8 +429,9 @@
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['recepcion_id'],",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
@@ -423,14 +451,64 @@
 				"          nro_guia_remision,",
 				"          temperatura_llegada",
 				"     )) ~> sink3",
-				"derivedColumn11 sink(allowSchemaDrift: true,",
+				"alterRow5 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          transportista_id as string,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          contacto as string,",
+				"          telefono as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['transportista_id'],",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink4",
-				"derivedColumn12 sink(allowSchemaDrift: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          transportista_id,",
+				"          razon_social,",
+				"          nit,",
+				"          municipio,",
+				"          contacto,",
+				"          telefono,",
+				"          estado",
+				"     )) ~> sink4",
+				"alterRow1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          vehiculo_id as string,",
+				"          transportista_id as string,",
+				"          descripcion as string,",
+				"          placa as string,",
+				"          tipo as string,",
+				"          capacidad_kg as decimal(10,2),",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:true,",
+				"     upsertable:true,",
+				"     keys:['vehiculo_id'],",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink5"
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          vehiculo_id,",
+				"          transportista_id,",
+				"          descripcion,",
+				"          placa,",
+				"          tipo,",
+				"          capacidad_kg,",
+				"          estado",
+				"     )) ~> sink5"
 			]
 		}
 	}
