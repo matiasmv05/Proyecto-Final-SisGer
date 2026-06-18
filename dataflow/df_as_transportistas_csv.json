@@ -1,0 +1,79 @@
+{
+	"name": "df_as_transportistas_csv",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "as_transportistas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_as_transportistas",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn10"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          transportista_id as string,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          contacto as string,",
+				"          telefono as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source4 derive(razon_social = trim(razon_social),",
+				"          municipio = trim(municipio),",
+				"          contacto = trim(contacto),",
+				"          nit = upper(trim(nit)),",
+				"          estado = upper(trim(estado)),",
+				"          telefono = trim(telefono)) ~> derivedColumn10",
+				"derivedColumn10 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          transportista_id as string,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          contacto as string,",
+				"          telefono as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          transportista_id,",
+				"          razon_social,",
+				"          nit,",
+				"          municipio,",
+				"          contacto,",
+				"          telefono,",
+				"          estado",
+				"     )) ~> sink4"
+			]
+		}
+	}
+}

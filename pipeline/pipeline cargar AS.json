@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_as",
+						"referenceName": "df_as_almacenes_csv",
 						"type": "DataFlowReference"
 					},
 					"compute": {

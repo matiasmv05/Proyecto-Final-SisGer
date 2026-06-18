@@ -1,0 +1,78 @@
+{
+	"name": "df_as_vehiculos_csv",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "as_vehiculos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_as_vehiculos",
+						"type": "DatasetReference"
+					},
+					"name": "sink5"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn12"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          vehiculo_id as string,",
+				"          transportista_id as string,",
+				"          descripcion as string,",
+				"          placa as string,",
+				"          tipo as string,",
+				"          capacidad_kg as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source5 derive(descripcion = trim(descripcion),",
+				"          placa = upper(trim(placa)),",
+				"          tipo = trim(tipo),",
+				"          estado = trim(estado),",
+				"          capacidad_kg = toDecimal(capacidad_kg)) ~> derivedColumn12",
+				"derivedColumn12 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          vehiculo_id as string,",
+				"          transportista_id as string,",
+				"          descripcion as string,",
+				"          placa as string,",
+				"          tipo as string,",
+				"          capacidad_kg as decimal(10,2),",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          vehiculo_id,",
+				"          transportista_id,",
+				"          descripcion,",
+				"          placa,",
+				"          tipo,",
+				"          capacidad_kg,",
+				"          estado",
+				"     )) ~> sink5"
+			]
+		}
+	}
+}

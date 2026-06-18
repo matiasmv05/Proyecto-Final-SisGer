@@ -68,7 +68,7 @@
 				"     mapColumn(",
 				"          supermercado_id = ID,",
 				"          cadena = Cadena,",
-				"          sucursal = Sucursal,",
+				"          sucursal = Cadena,",
 				"          municipio = Municipio,",
 				"          direccion = {Dirección},",
 				"          estado = Estado",

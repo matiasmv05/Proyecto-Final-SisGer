@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Data flow1",
+				"name": "df_spl_afiliaciones",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -27,11 +27,11 @@
 				}
 			},
 			{
-				"name": "Data flow2",
+				"name": "spl_certificados_medicos_csv",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Data flow1",
+						"activity": "df_spl_afiliaciones",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -58,11 +58,11 @@
 				}
 			},
 			{
-				"name": "Data flow3",
+				"name": "pl_asignaciones_mensuales",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Data flow1",
+						"activity": "df_spl_afiliaciones",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -89,7 +89,7 @@
 				}
 			},
 			{
-				"name": "Data flow4",
+				"name": "spl_asignaciones_mensuales",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -113,11 +113,11 @@
 				}
 			},
 			{
-				"name": "Data flow5",
+				"name": "spl_entregas_agencia",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Data flow4",
+						"activity": "spl_asignaciones_mensuales",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -133,7 +133,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_as",
+						"referenceName": "df_as_almacenes_csv",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -144,17 +144,17 @@
 				}
 			},
 			{
-				"name": "Data flow6",
+				"name": "spl_entregas_supermercado",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "Data flow4",
+						"activity": "spl_asignaciones_mensuales",
 						"dependencyConditions": [
 							"Completed"
 						]
 					},
 					{
-						"activity": "Data flow7",
+						"activity": "df_spl_supermercados",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -181,7 +181,7 @@
 				}
 			},
 			{
-				"name": "Data flow7",
+				"name": "df_spl_supermercados",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {

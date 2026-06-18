@@ -1,0 +1,131 @@
+{
+	"name": "df_as_recepciones_csv",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "as_recepciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_as_recepcione",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn8"
+				},
+				{
+					"name": "derivedColumn9"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_recepcion as string,",
+				"          cantidad_recibida as string,",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source3 derive(estado = upper(regexReplace(estado, '\\\\s+', '')),",
+				"          condicion = upper(regexReplace(condicion, '\\\\s+', '')),",
+				"          responsable = upper(regexReplace(responsable, '[^A-ZÑa-zñ]', '')),",
+				"          nro_lote = upper(nro_lote),",
+				"          nro_guia_remision = upper(regexReplace(nro_guia_remision, '-{2,}', '-')),",
+				"          unidad = upper(unidad)) ~> derivedColumn8",
+				"derivedColumn8 derive(estado = iif(instr(estado, 'VER') > 0, 'En Verificación',\r",
+				"    iif(instr(estado, 'CHAZ') > 0 || instr(estado, 'CHZA') > 0 || instr(estado, 'CEHAZ') > 0, 'Rechazado',\r",
+				"        iif(instr(estado, 'OBSER') > 0 || instr(estado, 'OBSEAV') > 0, 'Recibido con Observación',\r",
+				"            iif(instr(estado, 'REC') > 0 || instr(estado, 'RCE') > 0 || instr(estado, 'RCI') > 0 || instr(estado, 'REI') > 0 || instr(estado, 'REE') > 0,\r",
+				"                'Recibido',\r",
+				"                'REVISAR_MANUAL'\r",
+				"            )\r",
+				"        )\r",
+				"    )\r",
+				"),",
+				"          condicion = iif(instr(condicion, 'DAN') > 0 || instr(condicion, 'DAÑ') > 0, 'Dañado',\r",
+				"    iif(instr(condicion, 'GUL') > 0 || instr(condicion, 'RGU') > 0, 'Regular',\r",
+				"        iif(instr(condicion, 'BU') > 0 || instr(condicion, 'BE') > 0, 'Bueno',\r",
+				"            iif(isNull(condicion) || length(trim(condicion))==0, 'SIN_REGISTRO', 'REVISAR_MANUAL')\r",
+				"        )\r",
+				"    )\r",
+				"),",
+				"          responsable = iif(instr(responsable,'CONDOR') > 0,     iif(instr(responsable,'MARIO') > 0,         'Lic. Mario Condori H.',         iif(instr(responsable,'VALERIA') > 0 || instr(responsable,'ALERIA') > 0 || instr(responsable,'VAERIA') > 0,             'Lic. Valeria Condori A.',             'REVISAR_MANUAL_CONDORI')), iif(instr(responsable,'TORREZ') > 0 || instr(responsable,'TORRE') > 0 || instr(responsable,'TORRZ') > 0, 'Tec. Carlos Torrez L.', iif(instr(responsable,'LIMACHI') > 0 || instr(responsable,'IMACHI') > 0 || instr(responsable,'LIMCHI') > 0, 'Tec. Diego Limachi F.', iif(instr(responsable,'POMA') > 0, 'Tec. Fernando Poma C.', iif(instr(responsable,'VARGAS') > 0 || instr(responsable,'VARGSA') > 0 || instr(responsable,'VRAGAS') > 0 || instr(responsable,'VARRGAS') > 0 || instr(responsable,'VARGGAS') > 0 || instr(responsable,'VAARGAS') > 0, 'Tec. Roberto Vargas S.', iif(instr(responsable,'APAZA') > 0, 'Tec. Juana Apaza N.', iif(instr(responsable,'FLORES') > 0 || instr(responsable,'LORES') > 0 || instr(responsable,'FLRES') > 0, 'Tec. Sandra Flores T.', iif(instr(responsable,'MAMANI') > 0 || instr(responsable,'MMAANI') > 0 || instr(responsable,'MAMAN') > 0 || instr(responsable,'MAAMANI') > 0, 'Lic. Gabriela Mamani R.', iif(instr(responsable,'GUTIERREZ') > 0 || instr(responsable,'GUTIERRREZ') > 0 || instr(responsable,'UTIERREZ') > 0 || instr(responsable,'GUIERREZ') > 0, 'Lic. Ana Gutierrez V.', iif(instr(responsable,'QUISPE') > 0 || instr(responsable,'QUIPE') > 0 || instr(responsable,'QUIISPE') > 0, 'Lic. Pedro Quispe M.', iif(instr(responsable,'CHOQUE') > 0 || instr(responsable,'CHOUE') > 0 || instr(responsable,'HCOQUE') > 0 || instr(responsable,'CHOQEU') > 0, 'Lic. Claudia Choque P.',     iif(isNull(responsable) || length(trim(responsable))==0,         'SIN_RESPONSABLE_ASIGNADO',         'REVISAR_MANUAL') ))))))))))),",
+				"          fecha_recepcion = iif(isNull(fecha_recepcion) || length(trim(fecha_recepcion))==0,\r",
+				"    toDate(null()),\r",
+				"iif(regexExtract(fecha_recepcion,'^(\\\\d{4})-\\\\d{2}-\\\\d{2}$',1) != '',\r",
+				"    toDate(fecha_recepcion, 'yyyy-MM-dd'),\r",
+				"iif(regexExtract(fecha_recepcion,'^\\\\d{2}/\\\\d{2}/\\\\d{4}$',0) != '',\r",
+				"    toDate(fecha_recepcion, 'dd/MM/yyyy'),\r",
+				"iif(regexExtract(fecha_recepcion,'^\\\\d{2}-\\\\d{2}-\\\\d{4}$',0) != '',\r",
+				"    toDate(fecha_recepcion, 'dd-MM-yyyy'),\r",
+				"    toDate(null())\r",
+				")))),",
+				"          almacen_id = toInteger(almacen_id),",
+				"          temperatura_llegada = toDecimal(temperatura_llegada),",
+				"          cantidad_recibida = toDecimal(cantidad_recibida)) ~> derivedColumn9",
+				"derivedColumn9 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as integer,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_recepcion as date,",
+				"          cantidad_recibida as decimal(12,2),",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as decimal(5,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          recepcion_id,",
+				"          nro_lote,",
+				"          almacen_id,",
+				"          transportista_id,",
+				"          vehiculo_id,",
+				"          fecha_recepcion,",
+				"          cantidad_recibida,",
+				"          unidad,",
+				"          condicion,",
+				"          estado,",
+				"          responsable,",
+				"          nro_guia_remision,",
+				"          temperatura_llegada",
+				"     )) ~> sink3"
+			]
+		}
+	}
+}
