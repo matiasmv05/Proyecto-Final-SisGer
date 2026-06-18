@@ -1,0 +1,324 @@
+{
+	"name": "df_as_almacenes",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "as_almacenes_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_despachos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_recepciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_transportistas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "as_vehiculos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				}
+			],
+			"sinks": [
+				{
+					"name": "sink1"
+				},
+				{
+					"name": "sink2"
+				},
+				{
+					"name": "sink3"
+				},
+				{
+					"name": "sink4"
+				},
+				{
+					"name": "sink5"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "derivedColumn4"
+				},
+				{
+					"name": "derivedColumn5"
+				},
+				{
+					"name": "derivedColumn6"
+				},
+				{
+					"name": "derivedColumn7"
+				},
+				{
+					"name": "derivedColumn8"
+				},
+				{
+					"name": "derivedColumn9"
+				},
+				{
+					"name": "derivedColumn10"
+				},
+				{
+					"name": "derivedColumn11"
+				},
+				{
+					"name": "derivedColumn12"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          almacen_id as string,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          direccion as string,",
+				"          capacidad_m3 as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source(output(",
+				"          despacho_id as string,",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_despacho as string,",
+				"          cantidad_despachada as string,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source(output(",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_recepcion as string,",
+				"          cantidad_recibida as string,",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source(output(",
+				"          transportista_id as string,",
+				"          razon_social as string,",
+				"          nit as string,",
+				"          municipio as string,",
+				"          contacto as string,",
+				"          telefono as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source(output(",
+				"          vehiculo_id as string,",
+				"          transportista_id as string,",
+				"          descripcion as string,",
+				"          placa as string,",
+				"          tipo as string,",
+				"          capacidad_kg as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source1 derive(almacen_id = trim(almacen_id),",
+				"          nombre = trim(nombre),",
+				"          municipio = trim(municipio),",
+				"          departamento = trim(upper(departamento)),",
+				"          direccion = trim(direccion),",
+				"          capacidad_m3 = toInteger(trim(capacidad_m3)),",
+				"          estado = iif(isNull(estado) || trim(estado)=='', 'Desconocido', trim(estado))) ~> derivedColumn1",
+				"source2 derive(centro_destino = trim(centro_destino),",
+				"          responsable = trim(responsable),",
+				"          estado = trim(estado),",
+				"          nro_lote = trim(nro_lote),",
+				"          nro_guia_despacho = trim(nro_guia_despacho)) ~> derivedColumn2",
+				"derivedColumn2 derive(estado = upper(regexReplace(estado, '\\\\s+', '')),",
+				"          responsable = upper(regexReplace(responsable, '[^A-ZÑa-zñ]', '')),",
+				"          nro_lote = upper(nro_lote),",
+				"          nro_guia_despacho = upper(nro_guia_despacho)) ~> derivedColumn3",
+				"derivedColumn3 derive(estado = iif(instr(estado, 'TRAN') > 0 || instr(estado, 'RTAN') > 0, 'En Tránsito',\r",
+				"    iif(instr(estado, 'VU') > 0, 'Devuelto',\r",
+				"        iif(instr(estado, 'TREG') > 0 || instr(estado, 'TERG') > 0 || instr(estado, 'TRGE') > 0 ||\r",
+				"            instr(estado, 'TREA') > 0 || instr(estado, 'TEGA') > 0 || instr(estado, 'NTRE') > 0,\r",
+				"            'Entregado',\r",
+				"            iif(instr(estado, 'PACH') > 0 || instr(estado, 'SPAC') > 0 || instr(estado, 'PCAH') > 0 ||\r",
+				"                instr(estado, 'PAHA') > 0 || instr(estado, 'ESPA') > 0 || instr(estado, 'SAPC') > 0,\r",
+				"                'Despachado',\r",
+				"                'En Tránsito'\r",
+				"            )\r",
+				"        )\r",
+				"    )\r",
+				")) ~> derivedColumn4",
+				"derivedColumn4 derive(centro_destino = upper(regexReplace(centro_destino, '[^A-ZÁÉÍÓÚÑa-záéíóúñ]', ''))) ~> derivedColumn5",
+				"derivedColumn5 derive(centro_destino = iif(instr(centro_destino,'ORU') > 0 || instr(centro_destino,'RUR') > 0 || instr(centro_destino,'RRU') > 0, 'Centro Distribución Oruro',\r",
+				"iif(instr(centro_destino,'MONTER') > 0 || instr(centro_destino,'MONETR') > 0, 'Centro Distribución Montero',\r",
+				"iif(instr(centro_destino,'QUILLAC') > 0 || instr(centro_destino,'UILLACOLL') > 0, 'Centro Distribución Quillacollo',\r",
+				"iif(instr(centro_destino,'SUCRE') > 0 || instr(centro_destino,'SURE') > 0, 'Centro Distribución Sucre',\r",
+				"iif(instr(centro_destino,'TARIJ') > 0 || instr(centro_destino,'TAARIJ') > 0, 'Centro Distribución Tarija',\r",
+				"iif(instr(centro_destino,'YACUIB') > 0, 'Centro Distribución Yacuiba',\r",
+				"iif(instr(centro_destino,'COCHAB') > 0 || instr(centro_destino,'COCHAAB') > 0,\r",
+				"    iif(instr(centro_destino,'NORT') > 0 || instr(centro_destino,'NRT') > 0,\r",
+				"        'Centro Distribución Cochabamba - Zona Norte',\r",
+				"        'Centro Distribución Cochabamba - Central'),\r",
+				"iif(instr(centro_destino,'ALT') > 0 || instr(centro_destino,'LTO') > 0,\r",
+				"    iif(instr(centro_destino,'JULI') > 0 || instr(centro_destino,'JUL') > 0,\r",
+				"        'Centro Distribución El Alto - 16 de Julio',\r",
+				"        'Centro Distribución El Alto - Río Seco'),\r",
+				"iif(instr(centro_destino,'PAZ') > 0,\r",
+				"    iif(instr(centro_destino,'PEDR') > 0 || instr(centro_destino,'PDRO') > 0,\r",
+				"        'Centro Distribución La Paz - San Pedro',\r",
+				"        'Centro Distribución La Paz - Zona Sur'),\r",
+				"iif(instr(centro_destino,'CRUZ') > 0 || instr(centro_destino,'CRZ') > 0,\r",
+				"    iif(instr(centro_destino,'EQUIP') > 0 || instr(centro_destino,'EQUI') > 0,\r",
+				"        'Centro Distribución Santa Cruz - Equipetrol',\r",
+				"        'Centro Distribución Santa Cruz - Plan 3000'),\r",
+				"    'REVISAR_MANUAL'\r",
+				")))))))))),",
+				"          responsable = iif(instr(responsable,'CONDOR') > 0,\r",
+				"    iif(instr(responsable,'MARIO') > 0,\r",
+				"        'Lic. Mario Condori H.',\r",
+				"        iif(instr(responsable,'VALERIA') > 0 || instr(responsable,'ALERIA') > 0 || instr(responsable,'VAERIA') > 0,\r",
+				"            'Lic. Valeria Condori A.',\r",
+				"            'REVISAR_MANUAL_CONDORI')),\r",
+				"iif(instr(responsable,'TORREZ') > 0 || instr(responsable,'TORRE') > 0, 'Tec. Carlos Torrez L.',\r",
+				"iif(instr(responsable,'LIMACHI') > 0 || instr(responsable,'IMACHI') > 0, 'Tec. Diego Limachi F.',\r",
+				"iif(instr(responsable,'POMA') > 0, 'Tec. Fernando Poma C.',\r",
+				"iif(instr(responsable,'VARGAS') > 0 || instr(responsable,'VARGSA') > 0 || instr(responsable,'VRAGAS') > 0 || instr(responsable,'VARRGAS') > 0 || instr(responsable,'VARGGAS') > 0, 'Tec. Roberto Vargas S.',\r",
+				"iif(instr(responsable,'APAZA') > 0, 'Tec. Juana Apaza N.',\r",
+				"iif(instr(responsable,'FLORES') > 0 || instr(responsable,'LORES') > 0 || instr(responsable,'FLRES') > 0, 'Tec. Sandra Flores T.',\r",
+				"iif(instr(responsable,'MAMANI') > 0 || instr(responsable,'MMAANI') > 0 || instr(responsable,'MAMAN') > 0, 'Lic. Gabriela Mamani R.',\r",
+				"iif(instr(responsable,'GUTIERREZ') > 0 || instr(responsable,'GUTIERRREZ') > 0 || instr(responsable,'UTIERREZ') > 0, 'Lic. Ana Gutierrez V.',\r",
+				"iif(instr(responsable,'QUISPE') > 0 || instr(responsable,'QUIPE') > 0 || instr(responsable,'QUIISPE') > 0, 'Lic. Pedro Quispe M.',\r",
+				"iif(instr(responsable,'CHOQUE') > 0 || instr(responsable,'CHOUE') > 0 || instr(responsable,'HCOQUE') > 0, 'Lic. Claudia Choque P.',\r",
+				"    iif(isNull(responsable) || length(trim(responsable))==0,\r",
+				"        'SIN_RESPONSABLE_ASIGNADO',\r",
+				"        'REVISAR_MANUAL')\r",
+				")))))))))))) ~> derivedColumn6",
+				"derivedColumn6 derive(fecha_despacho = iif(isNull(fecha_despacho) || length(trim(fecha_despacho))==0,\r",
+				"    toDate(null()),\r",
+				"iif(regexExtract(fecha_despacho,'^(\\\\d{4})-\\\\d{2}-\\\\d{2}$',1) != '',\r",
+				"    toDate(fecha_despacho, 'yyyy-MM-dd'),\r",
+				"iif(regexExtract(fecha_despacho,'^\\\\d{2}/\\\\d{2}/\\\\d{4}$',0) != '',\r",
+				"    toDate(fecha_despacho, 'dd/MM/yyyy'),\r",
+				"iif(regexExtract(fecha_despacho,'^\\\\d{2}-\\\\d{2}-\\\\d{4}$',0) != '',\r",
+				"    toDate(fecha_despacho, 'dd-MM-yyyy'),\r",
+				"    toDate(null())\r",
+				")))),",
+				"          fecha_llegada = iif(isNull(fecha_llegada) || length(trim(fecha_llegada))==0,     toDate(null()), iif(regexExtract(fecha_llegada,'^(\\\\d{4})-\\\\d{2}-\\\\d{2}$',1) != '',     toDate(fecha_llegada, 'yyyy-MM-dd'), iif(regexExtract(fecha_llegada,'^\\\\d{2}/\\\\d{2}/\\\\d{4}$',0) != '',     toDate(fecha_llegada, 'dd/MM/yyyy'), iif(regexExtract(fecha_llegada,'^\\\\d{2}-\\\\d{2}-\\\\d{4}$',0) != '',     toDate(fecha_llegada, 'dd-MM-yyyy'),     toDate(null()) ))))) ~> derivedColumn7",
+				"source3 derive(estado = upper(regexReplace(estado, '\\\\s+', '')),",
+				"          condicion = upper(regexReplace(condicion, '\\\\s+', '')),",
+				"          responsable = upper(regexReplace(responsable, '[^A-ZÑa-zñ]', '')),",
+				"          nro_lote = upper(nro_lote),",
+				"          nro_guia_remision = upper(regexReplace(nro_guia_remision, '-{2,}', '-')),",
+				"          unidad = upper(unidad)) ~> derivedColumn8",
+				"derivedColumn8 derive(estado = iif(instr(estado, 'VER') > 0, 'En Verificación',\r",
+				"    iif(instr(estado, 'CHAZ') > 0 || instr(estado, 'CHZA') > 0 || instr(estado, 'CEHAZ') > 0, 'Rechazado',\r",
+				"        iif(instr(estado, 'OBSER') > 0 || instr(estado, 'OBSEAV') > 0, 'Recibido con Observación',\r",
+				"            iif(instr(estado, 'REC') > 0 || instr(estado, 'RCE') > 0 || instr(estado, 'RCI') > 0 || instr(estado, 'REI') > 0 || instr(estado, 'REE') > 0,\r",
+				"                'Recibido',\r",
+				"                'REVISAR_MANUAL'\r",
+				"            )\r",
+				"        )\r",
+				"    )\r",
+				"),",
+				"          condicion = iif(instr(condicion, 'DAN') > 0 || instr(condicion, 'DAÑ') > 0, 'Dañado',\r",
+				"    iif(instr(condicion, 'GUL') > 0 || instr(condicion, 'RGU') > 0, 'Regular',\r",
+				"        iif(instr(condicion, 'BU') > 0 || instr(condicion, 'BE') > 0, 'Bueno',\r",
+				"            iif(isNull(condicion) || length(trim(condicion))==0, 'SIN_REGISTRO', 'REVISAR_MANUAL')\r",
+				"        )\r",
+				"    )\r",
+				"),",
+				"          responsable = iif(instr(responsable,'CONDOR') > 0,     iif(instr(responsable,'MARIO') > 0,         'Lic. Mario Condori H.',         iif(instr(responsable,'VALERIA') > 0 || instr(responsable,'ALERIA') > 0 || instr(responsable,'VAERIA') > 0,             'Lic. Valeria Condori A.',             'REVISAR_MANUAL_CONDORI')), iif(instr(responsable,'TORREZ') > 0 || instr(responsable,'TORRE') > 0 || instr(responsable,'TORRZ') > 0, 'Tec. Carlos Torrez L.', iif(instr(responsable,'LIMACHI') > 0 || instr(responsable,'IMACHI') > 0 || instr(responsable,'LIMCHI') > 0, 'Tec. Diego Limachi F.', iif(instr(responsable,'POMA') > 0, 'Tec. Fernando Poma C.', iif(instr(responsable,'VARGAS') > 0 || instr(responsable,'VARGSA') > 0 || instr(responsable,'VRAGAS') > 0 || instr(responsable,'VARRGAS') > 0 || instr(responsable,'VARGGAS') > 0 || instr(responsable,'VAARGAS') > 0, 'Tec. Roberto Vargas S.', iif(instr(responsable,'APAZA') > 0, 'Tec. Juana Apaza N.', iif(instr(responsable,'FLORES') > 0 || instr(responsable,'LORES') > 0 || instr(responsable,'FLRES') > 0, 'Tec. Sandra Flores T.', iif(instr(responsable,'MAMANI') > 0 || instr(responsable,'MMAANI') > 0 || instr(responsable,'MAMAN') > 0 || instr(responsable,'MAAMANI') > 0, 'Lic. Gabriela Mamani R.', iif(instr(responsable,'GUTIERREZ') > 0 || instr(responsable,'GUTIERRREZ') > 0 || instr(responsable,'UTIERREZ') > 0 || instr(responsable,'GUIERREZ') > 0, 'Lic. Ana Gutierrez V.', iif(instr(responsable,'QUISPE') > 0 || instr(responsable,'QUIPE') > 0 || instr(responsable,'QUIISPE') > 0, 'Lic. Pedro Quispe M.', iif(instr(responsable,'CHOQUE') > 0 || instr(responsable,'CHOUE') > 0 || instr(responsable,'HCOQUE') > 0 || instr(responsable,'CHOQEU') > 0, 'Lic. Claudia Choque P.',     iif(isNull(responsable) || length(trim(responsable))==0,         'SIN_RESPONSABLE_ASIGNADO',         'REVISAR_MANUAL') ))))))))))),",
+				"          fecha_recepcion = iif(isNull(fecha_recepcion) || length(trim(fecha_recepcion))==0,\r",
+				"    toDate(null()),\r",
+				"iif(regexExtract(fecha_recepcion,'^(\\\\d{4})-\\\\d{2}-\\\\d{2}$',1) != '',\r",
+				"    toDate(fecha_recepcion, 'yyyy-MM-dd'),\r",
+				"iif(regexExtract(fecha_recepcion,'^\\\\d{2}/\\\\d{2}/\\\\d{4}$',0) != '',\r",
+				"    toDate(fecha_recepcion, 'dd/MM/yyyy'),\r",
+				"iif(regexExtract(fecha_recepcion,'^\\\\d{2}-\\\\d{2}-\\\\d{4}$',0) != '',\r",
+				"    toDate(fecha_recepcion, 'dd-MM-yyyy'),\r",
+				"    toDate(null())\r",
+				"))))) ~> derivedColumn9",
+				"source4 derive(razon_social = trim(razon_social),",
+				"          municipio = trim(municipio),",
+				"          contacto = trim(contacto),",
+				"          nit = upper(trim(nit)),",
+				"          estado = upper(trim(estado)),",
+				"          telefono = trim(telefono)) ~> derivedColumn10",
+				"derivedColumn10 derive(nit = iif(regexExtract(nit, '^NIT-\\\\d+$', 0) != '', true(), false())) ~> derivedColumn11",
+				"source5 derive(descripcion = trim(descripcion),",
+				"          placa = upper(trim(placa)),",
+				"          tipo = trim(tipo),",
+				"          estado = trim(estado)) ~> derivedColumn12",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1",
+				"derivedColumn7 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink2",
+				"derivedColumn9 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3",
+				"derivedColumn11 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink4",
+				"derivedColumn12 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink5"
+			]
+		}
+	}
+}

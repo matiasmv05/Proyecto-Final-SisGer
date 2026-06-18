@@ -1,0 +1,52 @@
+{
+	"name": "spl_supermercados_csv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "datalake_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "spl_supermercados.csv",
+				"folderPath": "SPL",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "ID",
+				"type": "String"
+			},
+			{
+				"name": "Cadena",
+				"type": "String"
+			},
+			{
+				"name": "Sucursal",
+				"type": "String"
+			},
+			{
+				"name": "Municipio",
+				"type": "String"
+			},
+			{
+				"name": "Dirección",
+				"type": "String"
+			},
+			{
+				"name": "Estado",
+				"type": "String"
+			}
+		]
+	}
+}

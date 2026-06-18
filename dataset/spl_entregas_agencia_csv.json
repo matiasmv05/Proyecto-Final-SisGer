@@ -1,0 +1,60 @@
+{
+	"name": "spl_entregas_agencia_csv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "datalake_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "spl_entregas_agencia.csv",
+				"folderPath": "SPL",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "entrega_ag_id",
+				"type": "String"
+			},
+			{
+				"name": "asignacion_id",
+				"type": "String"
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "String"
+			},
+			{
+				"name": "fecha_entrega",
+				"type": "String"
+			},
+			{
+				"name": "productos",
+				"type": "String"
+			},
+			{
+				"name": "lote",
+				"type": "String"
+			},
+			{
+				"name": "peso_kg",
+				"type": "String"
+			},
+			{
+				"name": "punto_entrega",
+				"type": "String"
+			}
+		]
+	}
+}

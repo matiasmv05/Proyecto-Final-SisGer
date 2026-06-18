@@ -1,0 +1,56 @@
+{
+	"name": "spl_certificados_medicos_csv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "datalake_subsidio",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "spl_certificados_medicos.csv",
+				"folderPath": "SPL",
+				"container": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "certificado_id",
+				"type": "String"
+			},
+			{
+				"name": "afiliacion_id",
+				"type": "String"
+			},
+			{
+				"name": "fecha_emision",
+				"type": "String"
+			},
+			{
+				"name": "semana_gestacion",
+				"type": "String"
+			},
+			{
+				"name": "fecha_probable_parto",
+				"type": "String"
+			},
+			{
+				"name": "medico_responsable",
+				"type": "String"
+			},
+			{
+				"name": "estado",
+				"type": "String"
+			}
+		]
+	}
+}
