@@ -1,0 +1,79 @@
+{
+	"name": "df_spl_supermercados_csv",
+	"properties": {
+		"folder": {
+			"name": "df_spl"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_supermercados_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_supermercado",
+						"type": "DatasetReference"
+					},
+					"name": "sink6"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn9"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as string,",
+				"          Cadena as string,",
+				"          Sucursal as string,",
+				"          Municipio as string,",
+				"          {Dirección} as string,",
+				"          Estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source6",
+				"source6 derive(Cadena = trim(Cadena),",
+				"          Sucursal = trim(Sucursal),",
+				"          Municipio = trim(Municipio),",
+				"          {Dirección} = trim({Dirección}),",
+				"          Estado = trim(Estado),",
+				"          ID = toInteger(ID)) ~> derivedColumn9",
+				"derivedColumn9 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          supermercado_id as integer,",
+				"          cadena as string,",
+				"          sucursal as string,",
+				"          municipio as string,",
+				"          direccion as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          supermercado_id = ID,",
+				"          cadena = Cadena,",
+				"          sucursal = Sucursal,",
+				"          municipio = Municipio,",
+				"          direccion = {Dirección},",
+				"          estado = Estado",
+				"     )) ~> sink6"
+			]
+		}
+	}
+}

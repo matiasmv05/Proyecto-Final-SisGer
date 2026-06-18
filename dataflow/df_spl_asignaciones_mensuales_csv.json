@@ -1,0 +1,98 @@
+{
+	"name": "df_spl_asignaciones_mensuales_csv",
+	"properties": {
+		"folder": {
+			"name": "df_spl"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_asignaciones_mensuales_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_asignaciones_mensuales",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "derivedColumn3"
+				},
+				{
+					"name": "derivedColumn4"
+				},
+				{
+					"name": "derivedColumn5"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          asignacion_id as string,",
+				"          afiliacion_id as string,",
+				"          mes as string,",
+				"          gestion as string,",
+				"          monto_bs as string,",
+				"          monto_productos as string,",
+				"          monto_carnes as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source2 derive(estado = upper(trim(estado)),",
+				"          monto_bs = round(toFloat(monto_bs), 2),",
+				"          gestion = trim(gestion)) ~> derivedColumn2",
+				"derivedColumn2 derive(estado = iif(isNull(estado) || trim(estado) == '', 'NO ESPECIFICADO', upper(trim(estado))),",
+				"          monto_bs = toDecimal(monto_bs),",
+				"          monto_productos = toDecimal(monto_productos),",
+				"          monto_carnes = toDecimal(monto_carnes)) ~> derivedColumn3",
+				"derivedColumn5 derive(estado = iif(isNull(trim(estado)) || trim(estado) == '', 'SIN_ESTADO', upper(trim(estado))),",
+				"          mes = toInteger(mes)) ~> derivedColumn4",
+				"derivedColumn3 derive(estado = upper(trim(estado))) ~> derivedColumn5",
+				"derivedColumn4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          asignacion_id as string,",
+				"          afiliacion_id as string,",
+				"          mes as integer,",
+				"          gestion as string,",
+				"          monto_bs as decimal(10,2),",
+				"          monto_productos as decimal(10,2),",
+				"          monto_carnes as decimal(10,2),",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          asignacion_id,",
+				"          afiliacion_id,",
+				"          mes,",
+				"          gestion,",
+				"          monto_bs,",
+				"          monto_productos,",
+				"          monto_carnes,",
+				"          estado",
+				"     )) ~> sink2"
+			]
+		}
+	}
+}

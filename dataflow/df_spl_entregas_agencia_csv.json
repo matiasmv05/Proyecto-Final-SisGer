@@ -1,0 +1,85 @@
+{
+	"name": "df_spl_entregas_agencia_csv",
+	"properties": {
+		"folder": {
+			"name": "df_spl"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_entregas_agencia_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source6"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_entregas_agencia",
+						"type": "DatasetReference"
+					},
+					"name": "sink6"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn9"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_ag_id as string,",
+				"          asignacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          fecha_entrega as string,",
+				"          productos as string,",
+				"          lote as string,",
+				"          peso_kg as string,",
+				"          punto_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source6",
+				"source6 derive(ci_beneficiaria = upper(trim(replace(ci_beneficiaria, '-', ''))),",
+				"          fecha_entrega = iif(isNull(fecha_entrega) || trim(fecha_entrega) == '', toDate(null()),   iif(locate('/', fecha_entrega) > 0,     toDate(fecha_entrega, 'dd/MM/yyyy'),     iif(toInteger(left(trim(fecha_entrega), 4)) > 31,       toDate(fecha_entrega, 'yyyy-MM-dd'),       toDate(fecha_entrega, 'dd-MM-yyyy')))),",
+				"          productos = trim(regexReplace(productos, '  +', ' ')),",
+				"          lote = upper(trim(lote)),",
+				"          peso_kg = toDecimal(peso_kg),",
+				"          punto_entrega = upper(trim(regexReplace(punto_entrega, '  +', ' ')))) ~> derivedColumn9",
+				"derivedColumn9 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_ag_id as string,",
+				"          asignacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          fecha_entrega as date,",
+				"          productos as string,",
+				"          lote as string,",
+				"          peso_kg as decimal(8,2),",
+				"          punto_entrega as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_ag_id,",
+				"          asignacion_id,",
+				"          ci_beneficiaria,",
+				"          fecha_entrega,",
+				"          productos,",
+				"          lote,",
+				"          peso_kg,",
+				"          punto_entrega",
+				"     )) ~> sink6"
+			]
+		}
+	}
+}

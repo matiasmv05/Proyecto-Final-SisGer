@@ -1,0 +1,75 @@
+{
+	"name": "df_sup_catalogo_paquetes",
+	"properties": {
+		"folder": {
+			"name": "df_sup"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_catalogo_paquetes_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_catalogo_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn2"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          paquete_id as string,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as string,",
+				"          costo_estimado_bs as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source2",
+				"source2 derive(nombre = trim(nombre),",
+				"          contenido = trim(contenido),",
+				"          peso_estandar_kg = toDecimal(peso_estandar_kg),",
+				"          costo_estimado_bs = toDecimal(costo_estimado_bs),",
+				"          paquete_id = toInteger(paquete_id)) ~> derivedColumn2",
+				"derivedColumn2 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          paquete_id as integer,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as decimal(6,2),",
+				"          costo_estimado_bs as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          paquete_id,",
+				"          nombre,",
+				"          contenido,",
+				"          peso_estandar_kg,",
+				"          costo_estimado_bs",
+				"     )) ~> sink2"
+			]
+		}
+	}
+}

@@ -1,0 +1,85 @@
+{
+	"name": "df_spl_entregas_supermercado_csv",
+	"properties": {
+		"folder": {
+			"name": "df_spl"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_entregas_supermercado_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source7"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_entregas_supermercado",
+						"type": "DatasetReference"
+					},
+					"name": "sink7"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn10"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_super_id as string,",
+				"          asignacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          supermercado_id as string,",
+				"          fecha_retiro as string,",
+				"          tipo_carne as string,",
+				"          cantidad_kg as string,",
+				"          monto_bs as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source7",
+				"source7 derive(ci_beneficiaria = upper(trim(regexReplace(regexReplace(ci_beneficiaria, '^[a-zA-Z]+', ''), '-', ''))),",
+				"          fecha_retiro = iif(isNull(fecha_retiro) || trim(fecha_retiro) == '', toDate(null()),   iif(locate('/', fecha_retiro) > 0,     iif(toInteger(left(trim(fecha_retiro), 2)) > 12,       toDate(fecha_retiro, 'dd/MM/yyyy'),       toDate(fecha_retiro, 'MM/dd/yyyy')),     iif(length(trim(fecha_retiro)) == 10 && toInteger(left(trim(fecha_retiro), 2)) <= 31 && toInteger(substring(trim(fecha_retiro), 4, 2)) <= 12,       toDate(fecha_retiro, 'dd-MM-yyyy'),       toDate(fecha_retiro, 'yyyy-MM-dd')))),",
+				"          tipo_carne = upper(trim(tipo_carne)),",
+				"          cantidad_kg = iif(isNull(cantidad_kg) || toString(cantidad_kg) == '', toDecimal(null()), toDecimal(cantidad_kg)),",
+				"          monto_bs = iif(isNull(monto_bs) || toString(monto_bs) == '', toDecimal(null()), toDecimal(monto_bs)),",
+				"          supermercado_id = toInteger(supermercado_id)) ~> derivedColumn10",
+				"derivedColumn10 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_super_id as string,",
+				"          asignacion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          supermercado_id as integer,",
+				"          fecha_retiro as date,",
+				"          tipo_carne as string,",
+				"          cantidad_kg as decimal(8,2),",
+				"          monto_bs as decimal(10,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_super_id,",
+				"          asignacion_id,",
+				"          ci_beneficiaria,",
+				"          supermercado_id,",
+				"          fecha_retiro,",
+				"          tipo_carne,",
+				"          cantidad_kg,",
+				"          monto_bs",
+				"     )) ~> sink7"
+			]
+		}
+	}
+}

@@ -1,0 +1,108 @@
+{
+	"name": "df_sup_entregas_csv",
+	"properties": {
+		"folder": {
+			"name": "df_sup"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_entregas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn4"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_id as string,",
+				"          boleta_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          paquete_id as string,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as string,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as string,",
+				"          fecha_proxima_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source4 derive(ci_beneficiaria = upper(\r",
+				"  regexReplace(\r",
+				"    regexReplace(ci_beneficiaria, '^(sc|tj|pt|bn)', ''),\r",
+				"    '[-\\\\s]', ''\r",
+				"  )\r",
+				"),",
+				"          fecha_entrega = iif(regexMatch(toString(fecha_entrega), '\\\\d{4}-\\\\d{2}-\\\\d{2}'),\r",
+				"  toDate(toString(fecha_entrega), 'yyyy-MM-dd'),\r",
+				"  iif(regexMatch(toString(fecha_entrega), '\\\\d{2}-\\\\d{2}-\\\\d{4}'),\r",
+				"    toDate(toString(fecha_entrega), 'dd-MM-yyyy'),\r",
+				"    iif(regexMatch(toString(fecha_entrega), '\\\\d{2}/\\\\d{2}/\\\\d{4}'),\r",
+				"      toDate(toString(fecha_entrega), 'dd/MM/yyyy'),\r",
+				"      toDate(null())\r",
+				"    )\r",
+				"  )\r",
+				"),",
+				"          fecha_proxima_entrega = iif(isNull(fecha_proxima_entrega) || length(trim(toString(fecha_proxima_entrega))) == 0,   toDate(null()),   iif(regexMatch(toString(fecha_proxima_entrega), '\\\\d{4}-\\\\d{2}-\\\\d{2}'),     toDate(toString(fecha_proxima_entrega), 'yyyy-MM-dd'),     iif(regexMatch(toString(fecha_proxima_entrega), '\\\\d{2}-\\\\d{2}-\\\\d{4}'),       toDate(toString(fecha_proxima_entrega), 'dd-MM-yyyy'),       iif(regexMatch(toString(fecha_proxima_entrega), '\\\\d{2}/\\\\d{2}/\\\\d{4}'),         toDate(toString(fecha_proxima_entrega), 'dd/MM/yyyy'),         toDate(null())       )     )   ) ),",
+				"          lote_produccion = trim(lote_produccion),",
+				"          entrega_id = toInteger(entrega_id),",
+				"          boleta_id = toInteger(boleta_id),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          paquete_id = toInteger(paquete_id),",
+				"          peso_paquete_kg = toDecimal(peso_paquete_kg)) ~> derivedColumn4",
+				"derivedColumn4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_id as integer,",
+				"          boleta_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as integer,",
+				"          paquete_id as integer,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as date,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as decimal(6,2),",
+				"          fecha_proxima_entrega as date",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_id,",
+				"          boleta_id,",
+				"          ci_beneficiaria,",
+				"          establecimiento_id,",
+				"          paquete_id,",
+				"          paquete_nombre,",
+				"          fecha_entrega,",
+				"          lote_produccion,",
+				"          peso_paquete_kg,",
+				"          fecha_proxima_entrega",
+				"     )) ~> sink4"
+			]
+		}
+	}
+}

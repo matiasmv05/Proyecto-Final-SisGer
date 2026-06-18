@@ -110,21 +110,6 @@
 				},
 				{
 					"name": "derivedColumn12"
-				},
-				{
-					"name": "alterRow1"
-				},
-				{
-					"name": "alterRow2"
-				},
-				{
-					"name": "alterRow3"
-				},
-				{
-					"name": "alterRow4"
-				},
-				{
-					"name": "alterRow5"
 				}
 			],
 			"scriptLines": [
@@ -335,12 +320,7 @@
 				"          tipo = trim(tipo),",
 				"          estado = trim(estado),",
 				"          capacidad_kg = toDecimal(capacidad_kg)) ~> derivedColumn12",
-				"derivedColumn12 alterRow(upsertIf(true())) ~> alterRow1",
-				"derivedColumn1 alterRow(updateIf(true())) ~> alterRow2",
-				"derivedColumn7 alterRow(updateIf(true())) ~> alterRow3",
-				"derivedColumn9 alterRow(updateIf(true())) ~> alterRow4",
-				"derivedColumn10 alterRow(updateIf(true())) ~> alterRow5",
-				"alterRow2 sink(allowSchemaDrift: true,",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          almacen_id as integer,",
@@ -369,7 +349,7 @@
 				"          capacidad_m3,",
 				"          estado",
 				"     )) ~> sink1",
-				"alterRow3 sink(allowSchemaDrift: true,",
+				"derivedColumn7 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          despacho_id as string,",
@@ -410,7 +390,7 @@
 				"          nro_guia_despacho,",
 				"          fecha_llegada",
 				"     )) ~> sink2",
-				"alterRow4 sink(allowSchemaDrift: true,",
+				"derivedColumn9 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          recepcion_id as string,",
@@ -451,7 +431,7 @@
 				"          nro_guia_remision,",
 				"          temperatura_llegada",
 				"     )) ~> sink3",
-				"alterRow5 sink(allowSchemaDrift: true,",
+				"derivedColumn10 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          transportista_id as string,",
@@ -480,7 +460,7 @@
 				"          telefono,",
 				"          estado",
 				"     )) ~> sink4",
-				"alterRow1 sink(allowSchemaDrift: true,",
+				"derivedColumn12 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          vehiculo_id as string,",

@@ -1,0 +1,86 @@
+{
+	"name": "df_bja_pagos_csv",
+	"properties": {
+		"folder": {
+			"name": "df_bja"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_pagos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "sink5"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn6"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pago_id as string,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as string,",
+				"          fecha_pago as string,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source5 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+				"          concepto_pago = iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%prenatal%1%') || like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%rpenatal%1%') || like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%prental%1%'),   'Control Prenatal 1',   iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%2%'),     'Control Prenatal 2',     iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%3%'),       'Control Prenatal 3',       iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%4%'),         'Control Prenatal 4',         iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%parto%'),           'Parto Institucional',           initCap(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))))         )       )     )   ) ),",
+				"          monto_bs = iif(toDecimal(monto_bs) == 50 || toDecimal(monto_bs) == 120, toDecimal(monto_bs), toDecimal(null())),",
+				"          fecha_pago = toDate(   iif(like(fecha_pago, '__/__/____'),     iif(toInteger(left(fecha_pago,2)) > 12,       concat(right(fecha_pago,4), '-', substring(fecha_pago,4,2), '-', left(fecha_pago,2)),       concat(right(fecha_pago,4), '-', left(fecha_pago,2), '-', substring(fecha_pago,4,2))     ),     iif(like(fecha_pago, '__-__-____'),       concat(right(fecha_pago,4), '-', substring(fecha_pago,4,2), '-', left(fecha_pago,2)),       fecha_pago     )   ),   'yyyy-MM-dd' ),",
+				"          estado_pago = iif(like(lower(trim(estado_pago)), '%pagado%'), 'Pagado',   iif(like(lower(trim(estado_pago)), '%pendiente%'), 'Pendiente',     iif(like(lower(trim(estado_pago)), '%anulado%'), 'Anulado',       initCap(lower(trim(estado_pago)))     )   ) ),",
+				"          canal_pago = iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bancounion%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bancounión%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bncounión%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%banounión%'),   'Banco Unión',   iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transferencia%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transfencia%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transferencía%'),     'Transferencia Bancaria',     iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pagomóvil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pagomovil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%paomóvil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pgomóvil%'),       'Pago Móvil',       iif(isNull(trim(canal_pago)) || length(trim(canal_pago)) == 0,         'Sin Dato',         initCap(lower(trim(canal_pago)))       )     )   ) ),",
+				"          nro_comprobante = iif(isNull(trim(nro_comprobante)) || length(trim(nro_comprobante)) == 0, 'Sin Comprobante', upper(trim(nro_comprobante)))) ~> derivedColumn6",
+				"derivedColumn6 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pago_id as string,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as decimal(10,2),",
+				"          fecha_pago as date,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          pago_id,",
+				"          ci_beneficiaria,",
+				"          concepto_pago,",
+				"          monto_bs,",
+				"          fecha_pago,",
+				"          estado_pago,",
+				"          canal_pago,",
+				"          nro_comprobante",
+				"     )) ~> sink5"
+			]
+		}
+	}
+}

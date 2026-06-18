@@ -1,0 +1,52 @@
+{
+	"name": "df_bja_inscripciones_csv",
+	"properties": {
+		"folder": {
+			"name": "df_bja"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_inscripciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				}
+			],
+			"sinks": [
+				{
+					"name": "sink4"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn5"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          inscripcion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          fecha_inscripcion as string,",
+				"          semana_gestacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source4 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+				"          inscripcion_id = toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'),",
+				"          fecha_inscripcion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion)),",
+				"          semana_gestacion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion)),",
+				"          estado = iif(like(lower(trim(estado)), '%completada%'), 'Completada',   iif(like(lower(trim(estado)), '%activa%') && !like(lower(trim(estado)), '%in%'), 'Activa',     iif(like(lower(trim(estado)), '%inactiva%'), 'Inactiva',       initCap(lower(trim(estado)))     )   ) )) ~> derivedColumn5",
+				"derivedColumn5 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink4"
+			]
+		}
+	}
+}

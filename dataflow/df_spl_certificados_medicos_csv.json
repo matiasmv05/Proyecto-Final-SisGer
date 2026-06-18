@@ -1,0 +1,81 @@
+{
+	"name": "df_spl_certificados_medicos_csv",
+	"properties": {
+		"folder": {
+			"name": "df_spl"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_certificados_medicos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_certificados_medicos",
+						"type": "DatasetReference"
+					},
+					"name": "sink4"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn7"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          certificado_id as string,",
+				"          afiliacion_id as string,",
+				"          fecha_emision as string,",
+				"          semana_gestacion as string,",
+				"          fecha_probable_parto as string,",
+				"          medico_responsable as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
+				"source4 derive(fecha_emision = toDate(fecha_emision, 'yyyy-MM-dd'),",
+				"          semana_gestacion = iif(isNull(semana_gestacion) || toString(semana_gestacion) == '', toInteger(null()), toInteger(semana_gestacion)),",
+				"          fecha_probable_parto = iif(isNull(fecha_probable_parto) || trim(fecha_probable_parto) == '', toDate(null()), toDate(fecha_probable_parto, 'yyyy-MM-dd')),",
+				"          medico_responsable = trim(medico_responsable),",
+				"          estado = upper(trim(estado))) ~> derivedColumn7",
+				"derivedColumn7 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          certificado_id as string,",
+				"          afiliacion_id as string,",
+				"          fecha_emision as date,",
+				"          semana_gestacion as integer,",
+				"          fecha_probable_parto as date,",
+				"          medico_responsable as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          certificado_id,",
+				"          afiliacion_id,",
+				"          fecha_emision,",
+				"          semana_gestacion,",
+				"          fecha_probable_parto,",
+				"          medico_responsable,",
+				"          estado",
+				"     )) ~> sink4"
+			]
+		}
+	}
+}

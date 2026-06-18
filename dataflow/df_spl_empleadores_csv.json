@@ -1,0 +1,78 @@
+{
+	"name": "df_spl_empleadores_csv",
+	"properties": {
+		"folder": {
+			"name": "df_spl"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_empleadores_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_empleadores",
+						"type": "DatasetReference"
+					},
+					"name": "sink5"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn8"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empleador_id as string,",
+				"          nit as string,",
+				"          razon_social as string,",
+				"          tipo as string,",
+				"          nro_patronal as string,",
+				"          municipio as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
+				"source5 derive(nit = trim(nit),",
+				"          razon_social = trim(razon_social),",
+				"          tipo = upper(trim(tipo)),",
+				"          nro_patronal = upper(trim(nro_patronal)),",
+				"          municipio = trim(municipio)) ~> derivedColumn8",
+				"derivedColumn8 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empleador_id as string,",
+				"          nit as string,",
+				"          razon_social as string,",
+				"          tipo as string,",
+				"          nro_patronal as string,",
+				"          municipio as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          empleador_id,",
+				"          nit,",
+				"          razon_social,",
+				"          tipo,",
+				"          nro_patronal,",
+				"          municipio",
+				"     )) ~> sink5"
+			]
+		}
+	}
+}

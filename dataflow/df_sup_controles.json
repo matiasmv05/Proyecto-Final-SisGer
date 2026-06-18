@@ -1,0 +1,55 @@
+{
+	"name": "df_sup_controles",
+	"properties": {
+		"folder": {
+			"name": "df_sup"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "sup_controles_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				}
+			],
+			"sinks": [
+				{
+					"name": "sink3"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn3"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source3 derive(ci_beneficiaria = upper(trim(regexReplace(regexReplace(ci_beneficiaria, '^[a-zA-Z]+', ''), '-', ''))),",
+				"          nro_control = toInteger(nro_control),",
+				"          fecha_control = iif(isNull(fecha_control) || trim(fecha_control) == '', toDate(null()),   iif(locate('/', fecha_control) > 0,     iif(toInteger(left(trim(fecha_control), 2)) > 12,       toDate(fecha_control, 'dd/MM/yyyy'),       toDate(fecha_control, 'MM/dd/yyyy')),     iif(toInteger(left(trim(fecha_control), 4)) > 31,       toDate(fecha_control, 'yyyy-MM-dd'),       toDate(fecha_control, 'dd-MM-yyyy')))),",
+				"          semana_gestacion = iif(isNull(semana_gestacion) || toString(semana_gestacion) == '', toInteger(null()), toInteger(semana_gestacion)),",
+				"          peso_madre_kg = iif(isNull(peso_madre_kg) || toString(peso_madre_kg) == '', toFloat(null()), toFloat(peso_madre_kg)),",
+				"          presion_arterial = trim(presion_arterial)) ~> derivedColumn3",
+				"derivedColumn3 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3"
+			]
+		}
+	}
+}

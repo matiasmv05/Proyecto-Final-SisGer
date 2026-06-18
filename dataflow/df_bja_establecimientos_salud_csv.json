@@ -1,0 +1,62 @@
+{
+	"name": "df_bja_establecimientos_salud_csv",
+	"properties": {
+		"folder": {
+			"name": "df_bja"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bja_establecimientos_salud_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				}
+			],
+			"sinks": [
+				{
+					"name": "sink3"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn4"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source3 derive(codigo_snis = upper(trim(codigo_snis)),",
+				"          nombre = trim(regexReplace(nombre, '\\\\s+', ' ')),",
+				"          tipo = iif(like(lower(trim(tipo)), '%hospital%'), 'Hospital',\r",
+				"  iif(like(lower(trim(tipo)), '%centro%'), 'Centro de Salud',\r",
+				"    iif(like(lower(trim(tipo)), '%puesto%'), 'Puesto de Salud',\r",
+				"      initCap(lower(trim(tipo)))\r",
+				"    )\r",
+				"  )\r",
+				"),",
+				"          nivel_atencion = iif(like(lower(trim(nivel_atencion)), '%primer%'), 'Primer Nivel',   iif(like(lower(trim(nivel_atencion)), '%segundo%'), 'Segundo Nivel',     iif(like(lower(trim(nivel_atencion)), '%tercer%'), 'Tercer Nivel',       initCap(lower(trim(nivel_atencion)))     )   ) ),",
+				"          departamento = iif(trim(departamento) == 'LP', 'La Paz',   iif(trim(departamento) == 'CB', 'Cochabamba',     iif(trim(departamento) == 'SC', 'Santa Cruz',       iif(trim(departamento) == 'OR', 'Oruro',         iif(trim(departamento) == 'PT', 'Potosí',           iif(trim(departamento) == 'TJ', 'Tarija',             iif(trim(departamento) == 'CH', 'Chuquisaca',               iif(trim(departamento) == 'BN', 'Beni',                 iif(trim(departamento) == 'PD', 'Pando',                   trim(departamento)                 )               )             )           )         )       )     )   ) ),",
+				"          estado = iif(like(lower(trim(estado)), '%activo%'), 'Activo',   iif(like(lower(trim(estado)), '%inactivo%'), 'Inactivo',     initCap(lower(trim(estado)))   ) )) ~> derivedColumn4",
+				"derivedColumn4 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink3"
+			]
+		}
+	}
+}

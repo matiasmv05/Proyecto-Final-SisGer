@@ -1,0 +1,75 @@
+{
+	"name": "df_spl_cajas_csv",
+	"properties": {
+		"folder": {
+			"name": "df_spl"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "spl_cajas_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source3"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_cajas",
+						"type": "DatasetReference"
+					},
+					"name": "sink3"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn12"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as string,",
+				"          Nombre as string,",
+				"          Sigla as string,",
+				"          Tipo as string,",
+				"          Estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source3",
+				"source3 derive(ID = toInteger(ID),",
+				"          Nombre = trim(Nombre),",
+				"          Sigla = trim(Sigla),",
+				"          Tipo = trim(Tipo),",
+				"          Estado = trim(Estado)) ~> derivedColumn12",
+				"derivedColumn12 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          caja_id as integer,",
+				"          nombre as string,",
+				"          sigla as string,",
+				"          tipo as string,",
+				"          estado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          caja_id = ID,",
+				"          nombre = Nombre,",
+				"          sigla = Sigla,",
+				"          tipo = Tipo,",
+				"          estado = Estado",
+				"     )) ~> sink3"
+			]
+		}
+	}
+}
