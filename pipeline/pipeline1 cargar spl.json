@@ -5,7 +5,20 @@
 			{
 				"name": "df_spl_afiliaciones",
 				"type": "ExecuteDataFlow",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "Data flow1",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "Data flow2",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -89,7 +102,7 @@
 				}
 			},
 			{
-				"name": "spl_asignaciones_mensuales",
+				"name": "Data flow1",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
@@ -102,7 +115,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_spl_asignaciones_mensuales_csv",
+						"referenceName": "df_spl_cajas_csv",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -113,11 +126,35 @@
 				}
 			},
 			{
-				"name": "spl_entregas_agencia",
+				"name": "Data flow2",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_spl_empleadores_csv",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow3",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "spl_asignaciones_mensuales",
+						"activity": "pl_asignaciones_mensuales",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -133,7 +170,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_as_almacenes_csv",
+						"referenceName": "df_spl_entregas_agencia_csv",
 						"type": "DataFlowReference"
 					},
 					"compute": {
@@ -144,17 +181,17 @@
 				}
 			},
 			{
-				"name": "spl_entregas_supermercado",
+				"name": "Data flow4",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
-						"activity": "spl_asignaciones_mensuales",
+						"activity": "pl_asignaciones_mensuales",
 						"dependencyConditions": [
 							"Completed"
 						]
 					},
 					{
-						"activity": "df_spl_supermercados",
+						"activity": "Data flow5",
 						"dependencyConditions": [
 							"Completed"
 						]
@@ -181,7 +218,7 @@
 				}
 			},
 			{
-				"name": "df_spl_supermercados",
+				"name": "Data flow5",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
 				"policy": {
