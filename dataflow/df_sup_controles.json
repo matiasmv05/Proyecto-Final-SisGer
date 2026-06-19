@@ -17,12 +17,19 @@
 			],
 			"sinks": [
 				{
+					"dataset": {
+						"referenceName": "silver_sup_controles_prenatales",
+						"type": "DatasetReference"
+					},
 					"name": "sink3"
 				}
 			],
 			"transformations": [
 				{
 					"name": "derivedColumn3"
+				},
+				{
+					"name": "derivedColumn4"
 				}
 			],
 			"scriptLines": [
@@ -45,10 +52,37 @@
 				"          semana_gestacion = iif(isNull(semana_gestacion) || toString(semana_gestacion) == '', toInteger(null()), toInteger(semana_gestacion)),",
 				"          peso_madre_kg = iif(isNull(peso_madre_kg) || toString(peso_madre_kg) == '', toFloat(null()), toFloat(peso_madre_kg)),",
 				"          presion_arterial = trim(presion_arterial)) ~> derivedColumn3",
-				"derivedColumn3 sink(allowSchemaDrift: true,",
+				"derivedColumn3 derive(control_id = to) ~> derivedColumn4",
+				"derivedColumn4 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          control_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(5,2),",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink3"
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ci_beneficiaria,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          semana_gestacion,",
+				"          peso_madre_kg,",
+				"          presion_arterial",
+				"     )) ~> sink3"
 			]
 		}
 	}

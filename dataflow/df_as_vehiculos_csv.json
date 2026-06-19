@@ -1,6 +1,9 @@
 {
 	"name": "df_as_vehiculos_csv",
 	"properties": {
+		"folder": {
+			"name": "df_as"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [

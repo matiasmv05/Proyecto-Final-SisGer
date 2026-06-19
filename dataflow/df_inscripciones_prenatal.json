@@ -1,9 +1,6 @@
 {
-	"name": "df_bja_inscripciones_csv",
+	"name": "df_inscripciones_prenatal",
 	"properties": {
-		"folder": {
-			"name": "df_bja"
-		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -13,16 +10,39 @@
 						"type": "DatasetReference"
 					},
 					"name": "source4"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_inscripciones_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source5"
 				}
 			],
 			"sinks": [
 				{
-					"name": "sink4"
+					"dataset": {
+						"referenceName": "silver_inscripciones_prenatal",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
 				}
 			],
 			"transformations": [
 				{
 					"name": "derivedColumn5"
+				},
+				{
+					"name": "derivedColumn6"
+				},
+				{
+					"name": "derivedColumn7"
+				},
+				{
+					"name": "derivedColumn8"
+				},
+				{
+					"name": "union1"
 				}
 			],
 			"scriptLines": [
@@ -37,15 +57,51 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source4",
+				"source(output(",
+				"          inscripcion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          fecha_inscripcion as string,",
+				"          semana_gestacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source5",
 				"source4 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
 				"          inscripcion_id = toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'),",
 				"          fecha_inscripcion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion)),",
 				"          semana_gestacion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion)),",
 				"          estado = iif(like(lower(trim(estado)), '%completada%'), 'Completada',   iif(like(lower(trim(estado)), '%activa%') && !like(lower(trim(estado)), '%in%'), 'Activa',     iif(like(lower(trim(estado)), '%inactiva%'), 'Inactiva',       initCap(lower(trim(estado)))     )   ) )) ~> derivedColumn5",
-				"derivedColumn5 sink(allowSchemaDrift: true,",
+				"source5 derive(ci_beneficiaria = trim(toString(ci_beneficiaria)),",
+				"          fecha_inscripcion = toDate(toString(fecha_inscripcion), 'yyyy-MM-dd'),",
+				"          estado = initCap(lower(trim(toString(estado))))) ~> derivedColumn6",
+				"derivedColumn5 derive(inscripcion_id = concat('BJA-', toString(establecimiento_id)),",
+				"          establecimiento_id = concat('BJA-', toString(establecimiento_id)),",
+				"          sistema_origen = 'BJA') ~> derivedColumn7",
+				"derivedColumn6 derive(inscripcion_id = concat('SUP-', toString(inscripcion_id)),",
+				"          establecimiento_id = concat('SUP-', toString(establecimiento_id)),",
+				"          sistema_origen = 'SUP') ~> derivedColumn8",
+				"derivedColumn7, derivedColumn8 union(byName: true)~> union1",
+				"union1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          inscripcion_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          fecha_inscripcion as date,",
+				"          semana_gestacion as integer,",
+				"          estado as string,",
+				"          sistema_origen as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink4"
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}

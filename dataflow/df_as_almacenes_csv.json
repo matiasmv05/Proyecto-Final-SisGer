@@ -1,6 +1,9 @@
 {
 	"name": "df_as_almacenes_csv",
 	"properties": {
+		"folder": {
+			"name": "df_as"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [

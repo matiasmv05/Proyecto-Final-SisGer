@@ -3,9 +3,156 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Data flow1",
+				"name": "as_transportista",
 				"type": "ExecuteDataFlow",
 				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_as_transportistas_csv",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "as_vehiculos",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "as_transportista",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_as_vehiculos_csv",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "df_as_almacenes",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_as_almacenes_csv",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "df_as_recepciones",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "as_transportista",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "df_as_almacenes",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "as_vehiculos",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_as_recepciones_csv",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "df_as_despachos",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "df_as_almacenes",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "as_transportista",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "as_vehiculos",
+						"dependencyConditions": [
+							"Completed"
+						]
+					},
+					{
+						"activity": "df_as_recepciones",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,

@@ -1,9 +1,6 @@
 {
-	"name": "df_bja_establecimientos_salud_csv",
+	"name": "df_establecimientos_salud",
 	"properties": {
-		"folder": {
-			"name": "df_bja"
-		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -13,16 +10,36 @@
 						"type": "DatasetReference"
 					},
 					"name": "source3"
+				},
+				{
+					"dataset": {
+						"referenceName": "sup_establecimientos_csv",
+						"type": "DatasetReference"
+					},
+					"name": "source4"
 				}
 			],
 			"sinks": [
 				{
-					"name": "sink3"
+					"dataset": {
+						"referenceName": "silver_establecimientos_salud",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
 				}
 			],
 			"transformations": [
 				{
 					"name": "derivedColumn4"
+				},
+				{
+					"name": "derivedColumn5"
+				},
+				{
+					"name": "derivedColumn6"
+				},
+				{
+					"name": "union1"
 				}
 			],
 			"scriptLines": [
@@ -40,6 +57,20 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source3",
+				"source(output(",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source4",
 				"source3 derive(codigo_snis = upper(trim(codigo_snis)),",
 				"          nombre = trim(regexReplace(nombre, '\\\\s+', ' ')),",
 				"          tipo = iif(like(lower(trim(tipo)), '%hospital%'), 'Hospital',\r",
@@ -52,10 +83,36 @@
 				"          nivel_atencion = iif(like(lower(trim(nivel_atencion)), '%primer%'), 'Primer Nivel',   iif(like(lower(trim(nivel_atencion)), '%segundo%'), 'Segundo Nivel',     iif(like(lower(trim(nivel_atencion)), '%tercer%'), 'Tercer Nivel',       initCap(lower(trim(nivel_atencion)))     )   ) ),",
 				"          departamento = iif(trim(departamento) == 'LP', 'La Paz',   iif(trim(departamento) == 'CB', 'Cochabamba',     iif(trim(departamento) == 'SC', 'Santa Cruz',       iif(trim(departamento) == 'OR', 'Oruro',         iif(trim(departamento) == 'PT', 'Potosí',           iif(trim(departamento) == 'TJ', 'Tarija',             iif(trim(departamento) == 'CH', 'Chuquisaca',               iif(trim(departamento) == 'BN', 'Beni',                 iif(trim(departamento) == 'PD', 'Pando',                   trim(departamento)                 )               )             )           )         )       )     )   ) ),",
 				"          estado = iif(like(lower(trim(estado)), '%activo%'), 'Activo',   iif(like(lower(trim(estado)), '%inactivo%'), 'Inactivo',     initCap(lower(trim(estado)))   ) )) ~> derivedColumn4",
-				"derivedColumn4 sink(allowSchemaDrift: true,",
+				"derivedColumn4 derive(establecimiento_id = concat('BJA-', toString(establecimiento_id))\r",
+				",",
+				"          sistema_origen = 'BJA') ~> derivedColumn5",
+				"source4 derive(nombre = trim(nombre),",
+				"          tipo = trim(tipo),",
+				"          establecimiento_id = concat('SUP-', toString(establecimiento_id)),",
+				"          sistema_origen = 'SUP') ~> derivedColumn6",
+				"derivedColumn5, derivedColumn6 union(byName: true)~> union1",
+				"union1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string,",
+				"          sistema_origen as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink3"
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}

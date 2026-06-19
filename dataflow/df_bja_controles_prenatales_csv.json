@@ -17,6 +17,10 @@
 			],
 			"sinks": [
 				{
+					"dataset": {
+						"referenceName": "silver_bja_controles_prenatale",
+						"type": "DatasetReference"
+					},
 					"name": "sink2"
 				}
 			],
@@ -49,8 +53,24 @@
 				"          nro_control = toInteger(nro_control)) ~> derivedColumn2",
 				"derivedColumn2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          control_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(5,2),",
+				"          presion_arterial as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
 				"          ci_beneficiaria,",
 				"          nro_control,",

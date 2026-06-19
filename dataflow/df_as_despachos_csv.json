@@ -1,6 +1,9 @@
 {
 	"name": "df_as_despachos_csv",
 	"properties": {
+		"folder": {
+			"name": "df_as"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -158,9 +161,10 @@
 				"          fecha_llegada as date",
 				"     ),",
 				"     deletable:false,",
-				"     insertable:true,",
+				"     insertable:false,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
