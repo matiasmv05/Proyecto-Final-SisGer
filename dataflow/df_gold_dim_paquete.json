@@ -12,7 +12,8 @@
 						"referenceName": "gold_dim_paquete",
 						"type": "DatasetReference"
 					},
-					"name": "source1"
+					"name": "source1",
+					"description": "Importar datos de gold_dim_paquete"
 				}
 			],
 			"sinks": [
