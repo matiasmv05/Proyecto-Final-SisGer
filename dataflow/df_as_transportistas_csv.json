@@ -1,6 +1,9 @@
 {
 	"name": "df_as_transportistas_csv",
 	"properties": {
+		"folder": {
+			"name": "df_as"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -60,6 +63,7 @@
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",

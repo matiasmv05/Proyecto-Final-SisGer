@@ -161,7 +161,7 @@
 				"          fecha_llegada as date",
 				"     ),",
 				"     deletable:false,",
-				"     insertable:false,",
+				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
 				"     truncate:true,",

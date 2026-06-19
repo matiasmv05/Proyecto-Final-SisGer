@@ -18,10 +18,10 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "silver_bja_controles_prenatale",
+						"referenceName": "silver_bja_controles_prenatales",
 						"type": "DatasetReference"
 					},
-					"name": "sink2"
+					"name": "sink1"
 				}
 			],
 			"transformations": [
@@ -50,36 +50,29 @@
 				"          resultado = iif(isNull(trim(resultado)) || length(trim(resultado)) == 0,   'Sin Dato',   iif(like(lower(trim(resultado)), '%normal%'),     'Normal',     iif(like(lower(trim(resultado)), '%riesgo alto%') || like(lower(trim(resultado)), '%riesg%alto%'),       'Riesgo Alto',       iif(like(lower(trim(resultado)), '%riesgo moderado%'),         'Riesgo Moderado',         iif(like(lower(trim(resultado)), '%riesgo bajo%') || like(lower(trim(resultado)), '%riesgoo bajo%'),           'Riesgo Bajo',           initCap(lower(trim(resultado)))         )       )     )   ) ),",
 				"          peso_madre_kg = toFloat(peso_madre_kg),",
 				"          semana_gestacion = toInteger(semana_gestacion),",
-				"          nro_control = toInteger(nro_control)) ~> derivedColumn2",
+				"          nro_control = toInteger(nro_control),",
+				"          control_id = control_prenatal_id) ~> derivedColumn2",
 				"derivedColumn2 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          control_id as integer,",
-				"          ci_beneficiaria as string,",
-				"          establecimiento_id as string,",
-				"          nro_control as integer,",
-				"          fecha_control as date,",
-				"          semana_gestacion as integer,",
-				"          peso_madre_kg as decimal(5,2),",
-				"          presion_arterial as string",
-				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
 				"     updateable:false,",
 				"     upsertable:false,",
+				"     truncate:true,",
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
 				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
 				"          ci_beneficiaria,",
-				"          nro_control,",
 				"          fecha_control,",
-				"          semana_gestacion,",
-				"          peso_madre_kg,",
 				"          presion_arterial,",
-				"          resultado",
-				"     )) ~> sink2"
+				"          resultado,",
+				"          peso_madre_kg,",
+				"          semana_gestacion,",
+				"          nro_control,",
+				"          control_id",
+				"     )) ~> sink1"
 			]
 		}
 	}
