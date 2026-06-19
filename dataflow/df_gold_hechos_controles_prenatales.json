@@ -1,0 +1,72 @@
+{
+	"name": "df_gold_hechos_controles_prenatales",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          control_id as string,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          tiempo_key as integer,",
+				"          sistema_key as integer,",
+				"          nro_control as integer,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(5,2),",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    CAST(control_id AS VARCHAR(50))                 AS control_id,\\n    ci_beneficiaria,\\n    establecimiento_id,\\n    CAST(FORMAT(fecha_control, \\'yyyyMMdd\\') AS INT)  AS tiempo_key,\\n    1                                               AS sistema_key,\\n    nro_control,\\n    semana_gestacion,\\n    peso_madre_kg,\\n    presion_arterial,\\n    CAST(NULL AS VARCHAR(100))                      AS resultado\\nFROM silver.sup_controles_prenatales\\n\\nUNION ALL\\n\\nSELECT\\n    CAST(control_id AS VARCHAR(50))                 AS control_id,\\n    ci_beneficiaria,\\n    CAST(NULL AS VARCHAR(20))                       AS establecimiento_id,\\n    CAST(FORMAT(fecha_control, \\'yyyyMMdd\\') AS INT)  AS tiempo_key,\\n    2                                               AS sistema_key,\\n    nro_control,\\n    semana_gestacion,\\n    peso_madre_kg,\\n    presion_arterial,\\n    resultado\\nFROM silver.bja_controles_prenatales',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_ped_key as integer,",
+				"          control_pediatrico_id as string,",
+				"          beneficiaria_key as integer,",
+				"          ci_nino as string,",
+				"          establecimiento_key as integer,",
+				"          tiempo_key as integer,",
+				"          nro_control as integer,",
+				"          peso_nino_kg as decimal(5,2),",
+				"          talla_nino_cm as decimal(5,2),",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

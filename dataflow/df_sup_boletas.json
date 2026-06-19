@@ -17,6 +17,10 @@
 			],
 			"sinks": [
 				{
+					"dataset": {
+						"referenceName": "silver_sup_boletas",
+						"type": "DatasetReference"
+					},
 					"name": "sink1"
 				}
 			],
@@ -41,11 +45,18 @@
 				"          nro_boleta = upper(trim(nro_boleta)),",
 				"          fecha_emision = iif(isNull(fecha_emision) || trim(fecha_emision) == '', toDate(null()),   iif(locate('/', fecha_emision) > 0,     iif(toInteger(left(trim(fecha_emision), 2)) > 12,       toDate(fecha_emision, 'dd/MM/yyyy'),       toDate(fecha_emision, 'MM/dd/yyyy')),     iif(toInteger(left(trim(fecha_emision), 4)) > 31,       toDate(fecha_emision, 'yyyy-MM-dd'),       toDate(fecha_emision, 'dd-MM-yyyy')))),",
 				"          estado = upper(trim(estado)),",
-				"          boleta_id = toInteger(boleta_id)) ~> derivedColumn1",
+				"          boleta_id = toInteger(boleta_id),",
+				"          control_id = concat('SUP-', toString(control_id))) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
 				"          boleta_id,",
 				"          control_id,",
@@ -53,8 +64,7 @@
 				"          nro_boleta,",
 				"          fecha_emision,",
 				"          estado",
-				"     ),",
-				"     format: 'table') ~> sink1"
+				"     )) ~> sink1"
 			]
 		}
 	}

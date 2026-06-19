@@ -1,0 +1,59 @@
+{
+	"name": "df_gold_dim_beneficiaria",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_segip_personas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_beneficiaria",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          ci_beneficiaria as string,",
+				"          nombres as string,",
+				"          primer_apellido as string,",
+				"          segundo_apellido as string,",
+				"          nombre_completo as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          en_sup as integer,",
+				"          en_bja as integer,",
+				"          en_spl as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    p.ci                                            AS ci_beneficiaria,\\n    TRIM(p.nombres)                                 AS nombres,\\n    TRIM(p.apellido_paterno)                        AS primer_apellido,\\n    TRIM(p.apellido_materno)                        AS segundo_apellido,\\n    TRIM(p.nombres) + \\' \\'\\n        + ISNULL(TRIM(p.apellido_paterno), \\'\\') + \\' \\'\\n        + ISNULL(TRIM(p.apellido_materno), \\'\\')      AS nombre_completo,\\n    p.municipio_residencia                          AS municipio,\\n    geo.departamento,\\n    CASE WHEN i_sup.ci_beneficiaria IS NOT NULL\\n         THEN 1 ELSE 0 END                          AS en_sup,\\n    CASE WHEN i_bja.ci_beneficiaria IS NOT NULL\\n         THEN 1 ELSE 0 END                          AS en_bja,\\n    CASE WHEN spl.ci_beneficiaria IS NOT NULL\\n         THEN 1 ELSE 0 END                          AS en_spl\\nFROM silver.segip_personas p\\nLEFT JOIN (\\n    SELECT DISTINCT municipio, departamento\\n    FROM silver.establecimientos_salud\\n) geo ON p.municipio_residencia = geo.municipio\\nLEFT JOIN (\\n    SELECT DISTINCT ci_beneficiaria\\n    FROM silver.inscripciones_prenatal\\n    WHERE sistema_origen = \\'SUP\\'\\n) i_sup ON p.ci = i_sup.ci_beneficiaria\\nLEFT JOIN (\\n    SELECT DISTINCT ci_beneficiaria\\n    FROM silver.inscripciones_prenatal\\n    WHERE sistema_origen = \\'BJA\\'\\n) i_bja ON p.ci = i_bja.ci_beneficiaria\\nLEFT JOIN (\\n    SELECT DISTINCT ci_beneficiaria\\n    FROM silver.spl_afiliaciones\\n) spl ON p.ci = spl.ci_beneficiaria',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
