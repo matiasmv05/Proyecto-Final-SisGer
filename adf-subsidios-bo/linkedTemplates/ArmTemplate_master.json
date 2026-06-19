@@ -1,0 +1,137 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "adf-subsidios-bo"
+		},
+		"datalake_subsidio_connectionString": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"connectionString\"de \"datalake_subsidio\""
+		},
+		"dw_subsidios_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"dw_subsidios\""
+		},
+		"dw_subsidios_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "srv-subsidio-dw.database.windows.net"
+		},
+		"dw_subsidios_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "dw_subsidio"
+		},
+		"dw_subsidios_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "adminDW"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI de la cuenta de almacenamiento que contiene las plantillas de ARM vinculadas."
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Token de SAS para la cuenta de almacenamiento que contiene las plantillas de ARM vinculadas"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "adf-subsidios-bo_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"datalake_subsidio_connectionString": {
+						"value": "[parameters('datalake_subsidio_connectionString')]"
+					},
+					"dw_subsidios_password": {
+						"value": "[parameters('dw_subsidios_password')]"
+					},
+					"dw_subsidios_properties_typeProperties_server": {
+						"value": "[parameters('dw_subsidios_properties_typeProperties_server')]"
+					},
+					"dw_subsidios_properties_typeProperties_database": {
+						"value": "[parameters('dw_subsidios_properties_typeProperties_database')]"
+					},
+					"dw_subsidios_properties_typeProperties_userName": {
+						"value": "[parameters('dw_subsidios_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "adf-subsidios-bo_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adf-subsidios-bo_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "adf-subsidios-bo_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adf-subsidios-bo_ArmTemplate_1')]"
+			]
+		},
+		{
+			"name": "adf-subsidios-bo_ArmTemplate_3",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_3.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'adf-subsidios-bo_ArmTemplate_2')]"
+			]
+		}
+	]
+}
