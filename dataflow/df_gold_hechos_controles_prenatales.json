@@ -42,6 +42,9 @@
 				},
 				{
 					"name": "select1"
+				},
+				{
+					"name": "derivedColumn2"
 				}
 			],
 			"scriptLines": [
@@ -95,7 +98,7 @@
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
 				"     format: 'table') ~> dimestablecimiento",
-				"controlesprenatales, dimbeneficiaria lookup(controlesprenatales@ci_beneficiaria == dimbeneficiaria@ci_beneficiaria,",
+				"derivedColumn2, dimbeneficiaria lookup(derivedColumn2@ci_beneficiaria == dimbeneficiaria@ci_beneficiaria,",
 				"     multiple: false,",
 				"     pickup: 'any',",
 				"     broadcast: 'auto')~> lookup1",
@@ -136,7 +139,8 @@
 				"          tiempo_key",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> select1"
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"controlesprenatales derive(ci_beneficiaria = upper(replace(replace(trim(ci_beneficiaria), '-', ''), ' ', ''))) ~> derivedColumn2"
 			]
 		}
 	}
