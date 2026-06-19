@@ -1,0 +1,19 @@
+{
+	"name": "silver_sup_boletas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_subsidios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Silver/sup"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sup_boletas"
+		}
+	}
+}

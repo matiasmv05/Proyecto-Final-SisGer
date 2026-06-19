@@ -17,10 +17,6 @@
 			],
 			"sinks": [
 				{
-					"dataset": {
-						"referenceName": "silver_sup_entregas",
-						"type": "DatasetReference"
-					},
 					"name": "sink4"
 				}
 			],
@@ -70,27 +66,8 @@
 				"          peso_paquete_kg = toDecimal(peso_paquete_kg)) ~> derivedColumn4",
 				"derivedColumn4 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     input(",
-				"          entrega_id as integer,",
-				"          boleta_id as integer,",
-				"          ci_beneficiaria as string,",
-				"          establecimiento_id as integer,",
-				"          paquete_id as integer,",
-				"          paquete_nombre as string,",
-				"          fecha_entrega as date,",
-				"          lote_produccion as string,",
-				"          peso_paquete_kg as decimal(6,2),",
-				"          fecha_proxima_entrega as date",
-				"     ),",
-				"     deletable:false,",
-				"     insertable:true,",
-				"     updateable:false,",
-				"     upsertable:false,",
-				"     truncate:true,",
-				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError',",
 				"     mapColumn(",
 				"          entrega_id,",
 				"          boleta_id,",
@@ -102,7 +79,8 @@
 				"          lote_produccion,",
 				"          peso_paquete_kg,",
 				"          fecha_proxima_entrega",
-				"     )) ~> sink4"
+				"     ),",
+				"     format: 'table') ~> sink4"
 			]
 		}
 	}
