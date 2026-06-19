@@ -57,7 +57,7 @@
 					{
 						"activity": "df_sup_controles",
 						"dependencyConditions": [
-							"Completed"
+							"Succeeded"
 						]
 					}
 				],
@@ -88,7 +88,7 @@
 					{
 						"activity": "df_sup_boletas",
 						"dependencyConditions": [
-							"Completed"
+							"Succeeded"
 						]
 					}
 				],
