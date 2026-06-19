@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "pipeline2",
 	"properties": {
 		"activities": [
 			{
@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataflow": {
-						"referenceName": "df_establecimientos_salud",
+						"referenceName": "df_inscripciones_prenatal",
 						"type": "DataFlowReference"
 					},
 					"compute": {
