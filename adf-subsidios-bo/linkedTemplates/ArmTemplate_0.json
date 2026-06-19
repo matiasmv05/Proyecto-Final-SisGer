@@ -494,6 +494,75 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/bja_controles_prenatales_csv')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "datalake_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "bronze/BJA"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "bja_controles_prenatales.csv",
+						"folderPath": "BJA",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "control_prenatal_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "establecimiento_id",
+						"type": "String"
+					},
+					{
+						"name": "nro_control",
+						"type": "String"
+					},
+					{
+						"name": "fecha_control",
+						"type": "String"
+					},
+					{
+						"name": "semana_gestacion",
+						"type": "String"
+					},
+					{
+						"name": "peso_madre_kg",
+						"type": "String"
+					},
+					{
+						"name": "presion_arterial",
+						"type": "String"
+					},
+					{
+						"name": "resultado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/bja_establecimientos_salud_csv')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -750,491 +819,293 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_afiliaciones_csv')]",
+			"name": "[concat(parameters('factoryName'), '/gold_dim_beneficiaria')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "datalake_subsidio",
+					"referenceName": "dw_subsidios",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "bronze/SPL"
+					"name": "gold"
 				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"type": "AzureSqlTable",
+				"schema": [],
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "spl_afiliaciones.csv",
-						"folderPath": "SPL",
-						"container": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "afiliacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "empleador_id",
-						"type": "String"
-					},
-					{
-						"name": "caja_id",
-						"type": "String"
-					},
-					{
-						"name": "fecha_afiliacion",
-						"type": "String"
-					},
-					{
-						"name": "nro_matricula",
-						"type": "String"
-					},
-					{
-						"name": "tipo_subsidio",
-						"type": "String"
-					},
-					{
-						"name": "estado",
-						"type": "String"
-					}
-				]
+					"schema": "gold",
+					"table": "dim_beneficiaria"
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
+				"[concat(variables('factoryId'), '/linkedServices/dw_subsidios')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_asignaciones_mensuales_csv')]",
+			"name": "[concat(parameters('factoryName'), '/gold_dim_establecimiento')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "datalake_subsidio",
+					"referenceName": "dw_subsidios",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "bronze/SPL"
+					"name": "gold"
 				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"type": "AzureSqlTable",
+				"schema": [],
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "spl_asignaciones_mensuales.csv",
-						"folderPath": "SPL",
-						"container": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "asignacion_id",
-						"type": "String"
-					},
-					{
-						"name": "afiliacion_id",
-						"type": "String"
-					},
-					{
-						"name": "mes",
-						"type": "String"
-					},
-					{
-						"name": "gestion",
-						"type": "String"
-					},
-					{
-						"name": "monto_bs",
-						"type": "String"
-					},
-					{
-						"name": "monto_productos",
-						"type": "String"
-					},
-					{
-						"name": "monto_carnes",
-						"type": "String"
-					},
-					{
-						"name": "estado",
-						"type": "String"
-					}
-				]
+					"schema": "gold",
+					"table": "dim_establecimiento"
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
+				"[concat(variables('factoryId'), '/linkedServices/dw_subsidios')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_cajas_csv')]",
+			"name": "[concat(parameters('factoryName'), '/gold_dim_paquete')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "datalake_subsidio",
+					"referenceName": "dw_subsidios",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "bronze/SPL"
+					"name": "gold"
 				},
 				"annotations": [],
-				"type": "DelimitedText",
+				"type": "AzureSqlTable",
+				"schema": [],
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "spl_cajas.csv",
-						"folderPath": "SPL",
-						"container": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "ID",
-						"type": "String"
-					},
-					{
-						"name": "Nombre",
-						"type": "String"
-					},
-					{
-						"name": "Sigla",
-						"type": "String"
-					},
-					{
-						"name": "Tipo",
-						"type": "String"
-					},
-					{
-						"name": "Estado",
-						"type": "String"
-					}
-				]
+					"schema": "gold",
+					"table": "dim_paquete"
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
+				"[concat(variables('factoryId'), '/linkedServices/dw_subsidios')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/spl_certificados_medicos_csv')]",
+			"name": "[concat(parameters('factoryName'), '/gold_dim_sistema')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "datalake_subsidio",
+					"referenceName": "dw_subsidios",
 					"type": "LinkedServiceReference"
 				},
 				"folder": {
-					"name": "bronze/SPL"
+					"name": "gold"
 				},
 				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "spl_certificados_medicos.csv",
-						"folderPath": "SPL",
-						"container": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
+				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "certificado_id",
-						"type": "String"
+						"name": "sistema_key",
+						"type": "int",
+						"precision": 10
 					},
 					{
-						"name": "afiliacion_id",
-						"type": "String"
+						"name": "codigo",
+						"type": "varchar"
 					},
 					{
-						"name": "fecha_emision",
-						"type": "String"
+						"name": "nombre",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_sistema"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dw_subsidios')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_dim_tiempo')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dw_subsidios",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "gold"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "dim_tiempo"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dw_subsidios')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_hechos_controles_pediatricos')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dw_subsidios",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "gold"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "control_ped_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "control_pediatrico_id",
+						"type": "varchar"
+					},
+					{
+						"name": "beneficiaria_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ci_nino",
+						"type": "varchar"
+					},
+					{
+						"name": "establecimiento_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "tiempo_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "nro_control",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "peso_nino_kg",
+						"type": "decimal",
+						"precision": 5,
+						"scale": 2
+					},
+					{
+						"name": "talla_nino_cm",
+						"type": "decimal",
+						"precision": 5,
+						"scale": 2
+					},
+					{
+						"name": "vacuna_aplicada",
+						"type": "varchar"
+					},
+					{
+						"name": "resultado",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "gold",
+					"table": "hechos_controles_pediatricos"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/dw_subsidios')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/gold_hechos_controles_prenatales')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "dw_subsidios",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "gold"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "control_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "control_id",
+						"type": "varchar"
+					},
+					{
+						"name": "beneficiaria_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "establecimiento_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "tiempo_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "sistema_key",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "nro_control",
+						"type": "int",
+						"precision": 10
 					},
 					{
 						"name": "semana_gestacion",
-						"type": "String"
+						"type": "int",
+						"precision": 10
 					},
 					{
-						"name": "fecha_probable_parto",
-						"type": "String"
+						"name": "peso_madre_kg",
+						"type": "decimal",
+						"precision": 5,
+						"scale": 2
 					},
 					{
-						"name": "medico_responsable",
-						"type": "String"
+						"name": "presion_arterial",
+						"type": "varchar"
 					},
 					{
-						"name": "estado",
-						"type": "String"
+						"name": "resultado",
+						"type": "varchar"
 					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/spl_empleadores_csv')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "datalake_subsidio",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "bronze/SPL"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
+				],
 				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "spl_empleadores.csv",
-						"folderPath": "SPL",
-						"container": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "empleador_id",
-						"type": "String"
-					},
-					{
-						"name": "nit",
-						"type": "String"
-					},
-					{
-						"name": "razon_social",
-						"type": "String"
-					},
-					{
-						"name": "tipo",
-						"type": "String"
-					},
-					{
-						"name": "nro_patronal",
-						"type": "String"
-					},
-					{
-						"name": "municipio",
-						"type": "String"
-					}
-				]
+					"schema": "gold",
+					"table": "hechos_controles_prenatales"
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/spl_entregas_agencia_csv')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "datalake_subsidio",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "bronze/SPL"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "spl_entregas_agencia.csv",
-						"folderPath": "SPL",
-						"container": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "entrega_ag_id",
-						"type": "String"
-					},
-					{
-						"name": "asignacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "fecha_entrega",
-						"type": "String"
-					},
-					{
-						"name": "productos",
-						"type": "String"
-					},
-					{
-						"name": "lote",
-						"type": "String"
-					},
-					{
-						"name": "peso_kg",
-						"type": "String"
-					},
-					{
-						"name": "punto_entrega",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/spl_entregas_supermercado_csv')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "datalake_subsidio",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "bronze/SPL"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "spl_entregas_supermercado.csv",
-						"folderPath": "SPL",
-						"container": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "entrega_super_id",
-						"type": "String"
-					},
-					{
-						"name": "asignacion_id",
-						"type": "String"
-					},
-					{
-						"name": "ci_beneficiaria",
-						"type": "String"
-					},
-					{
-						"name": "supermercado_id",
-						"type": "String"
-					},
-					{
-						"name": "fecha_retiro",
-						"type": "String"
-					},
-					{
-						"name": "tipo_carne",
-						"type": "String"
-					},
-					{
-						"name": "cantidad_kg",
-						"type": "String"
-					},
-					{
-						"name": "monto_bs",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/spl_supermercados_csv')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "datalake_subsidio",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "bronze/SPL"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "spl_supermercados.csv",
-						"folderPath": "SPL",
-						"container": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "ID",
-						"type": "String"
-					},
-					{
-						"name": "Cadena",
-						"type": "String"
-					},
-					{
-						"name": "Sucursal",
-						"type": "String"
-					},
-					{
-						"name": "Municipio",
-						"type": "String"
-					},
-					{
-						"name": "Dirección",
-						"type": "String"
-					},
-					{
-						"name": "Estado",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/datalake_subsidio')]"
+				"[concat(variables('factoryId'), '/linkedServices/dw_subsidios')]"
 			]
 		}
 	]

@@ -13,675 +13,74 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/df_spl_empleadores_csv')]",
+			"name": "[concat(parameters('factoryName'), '/sup_inscripciones_csv')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "datalake_subsidio",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "bronze/SUP"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "sup_inscripciones.csv",
+						"folderPath": "SUP",
+						"container": "bronze"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "inscripcion_id",
+						"type": "String"
+					},
+					{
+						"name": "ci_beneficiaria",
+						"type": "String"
+					},
+					{
+						"name": "establecimiento_id",
+						"type": "String"
+					},
+					{
+						"name": "fecha_inscripcion",
+						"type": "String"
+					},
+					{
+						"name": "semana_gestacion",
+						"type": "String"
+					},
+					{
+						"name": "estado",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_as_almacenes_csv')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"folder": {
-					"name": "df_spl"
+					"name": "df_as"
 				},
 				"type": "MappingDataFlow",
 				"typeProperties": {
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "spl_empleadores_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source5"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "silver_spl_empleadores",
-								"type": "DatasetReference"
-							},
-							"name": "sink5"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn8"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          empleador_id as string,",
-						"          nit as string,",
-						"          razon_social as string,",
-						"          tipo as string,",
-						"          nro_patronal as string,",
-						"          municipio as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source5",
-						"source5 derive(nit = trim(nit),",
-						"          razon_social = trim(razon_social),",
-						"          tipo = upper(trim(tipo)),",
-						"          nro_patronal = upper(trim(nro_patronal)),",
-						"          municipio = trim(municipio)) ~> derivedColumn8",
-						"derivedColumn8 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          empleador_id as string,",
-						"          nit as string,",
-						"          razon_social as string,",
-						"          tipo as string,",
-						"          nro_patronal as string,",
-						"          municipio as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          empleador_id,",
-						"          nit,",
-						"          razon_social,",
-						"          tipo,",
-						"          nro_patronal,",
-						"          municipio",
-						"     )) ~> sink5"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_spl_entregas_agencia_csv')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "df_spl"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "spl_entregas_agencia_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source6"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "silver_spl_entregas_agencia",
-								"type": "DatasetReference"
-							},
-							"name": "sink6"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn9"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          entrega_ag_id as string,",
-						"          asignacion_id as string,",
-						"          ci_beneficiaria as string,",
-						"          fecha_entrega as string,",
-						"          productos as string,",
-						"          lote as string,",
-						"          peso_kg as string,",
-						"          punto_entrega as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source6",
-						"source6 derive(ci_beneficiaria = upper(trim(replace(ci_beneficiaria, '-', ''))),",
-						"          fecha_entrega = iif(isNull(fecha_entrega) || trim(fecha_entrega) == '', toDate(null()),   iif(locate('/', fecha_entrega) > 0,     toDate(fecha_entrega, 'dd/MM/yyyy'),     iif(toInteger(left(trim(fecha_entrega), 4)) > 31,       toDate(fecha_entrega, 'yyyy-MM-dd'),       toDate(fecha_entrega, 'dd-MM-yyyy')))),",
-						"          productos = trim(regexReplace(productos, '  +', ' ')),",
-						"          lote = upper(trim(lote)),",
-						"          peso_kg = toDecimal(peso_kg),",
-						"          punto_entrega = upper(trim(regexReplace(punto_entrega, '  +', ' ')))) ~> derivedColumn9",
-						"derivedColumn9 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          entrega_ag_id as string,",
-						"          asignacion_id as string,",
-						"          ci_beneficiaria as string,",
-						"          fecha_entrega as date,",
-						"          productos as string,",
-						"          lote as string,",
-						"          peso_kg as decimal(8,2),",
-						"          punto_entrega as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          entrega_ag_id,",
-						"          asignacion_id,",
-						"          ci_beneficiaria,",
-						"          fecha_entrega,",
-						"          productos,",
-						"          lote,",
-						"          peso_kg,",
-						"          punto_entrega",
-						"     )) ~> sink6"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_spl_entregas_supermercado_csv')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "df_spl"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "spl_entregas_supermercado_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source7"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "silver_spl_entregas_supermercado",
-								"type": "DatasetReference"
-							},
-							"name": "sink7"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn10"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          entrega_super_id as string,",
-						"          asignacion_id as string,",
-						"          ci_beneficiaria as string,",
-						"          supermercado_id as string,",
-						"          fecha_retiro as string,",
-						"          tipo_carne as string,",
-						"          cantidad_kg as string,",
-						"          monto_bs as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source7",
-						"source7 derive(ci_beneficiaria = upper(trim(regexReplace(regexReplace(ci_beneficiaria, '^[a-zA-Z]+', ''), '-', ''))),",
-						"          fecha_retiro = iif(isNull(fecha_retiro) || trim(fecha_retiro) == '', toDate(null()),   iif(locate('/', fecha_retiro) > 0,     iif(toInteger(left(trim(fecha_retiro), 2)) > 12,       toDate(fecha_retiro, 'dd/MM/yyyy'),       toDate(fecha_retiro, 'MM/dd/yyyy')),     iif(length(trim(fecha_retiro)) == 10 && toInteger(left(trim(fecha_retiro), 2)) <= 31 && toInteger(substring(trim(fecha_retiro), 4, 2)) <= 12,       toDate(fecha_retiro, 'dd-MM-yyyy'),       toDate(fecha_retiro, 'yyyy-MM-dd')))),",
-						"          tipo_carne = upper(trim(tipo_carne)),",
-						"          cantidad_kg = iif(isNull(cantidad_kg) || toString(cantidad_kg) == '', toDecimal(null()), toDecimal(cantidad_kg)),",
-						"          monto_bs = iif(isNull(monto_bs) || toString(monto_bs) == '', toDecimal(null()), toDecimal(monto_bs)),",
-						"          supermercado_id = toInteger(supermercado_id)) ~> derivedColumn10",
-						"derivedColumn10 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          entrega_super_id as string,",
-						"          asignacion_id as string,",
-						"          ci_beneficiaria as string,",
-						"          supermercado_id as integer,",
-						"          fecha_retiro as date,",
-						"          tipo_carne as string,",
-						"          cantidad_kg as decimal(8,2),",
-						"          monto_bs as decimal(10,2)",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          entrega_super_id,",
-						"          asignacion_id,",
-						"          ci_beneficiaria,",
-						"          supermercado_id,",
-						"          fecha_retiro,",
-						"          tipo_carne,",
-						"          cantidad_kg,",
-						"          monto_bs",
-						"     )) ~> sink7"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_spl_supermercados_csv')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "df_spl"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "spl_supermercados_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source6"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "silver_spl_supermercado",
-								"type": "DatasetReference"
-							},
-							"name": "sink6"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn9"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          ID as string,",
-						"          Cadena as string,",
-						"          Sucursal as string,",
-						"          Municipio as string,",
-						"          {Dirección} as string,",
-						"          Estado as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source6",
-						"source6 derive(Cadena = trim(Cadena),",
-						"          Sucursal = trim(Sucursal),",
-						"          Municipio = trim(Municipio),",
-						"          {Dirección} = trim({Dirección}),",
-						"          Estado = trim(Estado),",
-						"          ID = toInteger(ID)) ~> derivedColumn9",
-						"derivedColumn9 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          supermercado_id as integer,",
-						"          cadena as string,",
-						"          sucursal as string,",
-						"          municipio as string,",
-						"          direccion as string,",
-						"          estado as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          supermercado_id = ID,",
-						"          cadena = Cadena,",
-						"          sucursal = Cadena,",
-						"          municipio = Municipio,",
-						"          direccion = {Dirección},",
-						"          estado = Estado",
-						"     )) ~> sink6"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_inscripciones_prenatal')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "bja_inscripciones_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source4"
-						},
-						{
-							"dataset": {
-								"referenceName": "sup_inscripciones_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source5"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "silver_inscripciones_prenatal",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn5"
-						},
-						{
-							"name": "derivedColumn6"
-						},
-						{
-							"name": "derivedColumn7"
-						},
-						{
-							"name": "derivedColumn8"
-						},
-						{
-							"name": "union1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          inscripcion_id as string,",
-						"          ci_beneficiaria as string,",
-						"          establecimiento_id as string,",
-						"          fecha_inscripcion as string,",
-						"          semana_gestacion as string,",
-						"          estado as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source4",
-						"source(output(",
-						"          inscripcion_id as string,",
-						"          ci_beneficiaria as string,",
-						"          establecimiento_id as string,",
-						"          fecha_inscripcion as string,",
-						"          semana_gestacion as string,",
-						"          estado as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source5",
-						"source4 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
-						"          inscripcion_id = toDate(trim(fecha_inscripcion), 'yyyy-MM-dd'),",
-						"          fecha_inscripcion = toDate(toString(fecha_inscripcion), 'yyyy-MM-dd'),",
-						"          semana_gestacion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion)),",
-						"          estado = iif(like(lower(trim(estado)), '%completada%'), 'Completada',   iif(like(lower(trim(estado)), '%activa%') && !like(lower(trim(estado)), '%in%'), 'Activa',     iif(like(lower(trim(estado)), '%inactiva%'), 'Inactiva',       initCap(lower(trim(estado)))     )   ) )) ~> derivedColumn5",
-						"source5 derive(ci_beneficiaria = trim(toString(ci_beneficiaria)),",
-						"          fecha_inscripcion = toDate(toString(fecha_inscripcion), 'yyyy-MM-dd'),",
-						"          estado = initCap(lower(trim(toString(estado)))),",
-						"          semana_gestacion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion))) ~> derivedColumn6",
-						"derivedColumn5 derive(inscripcion_id = concat('BJA-', toString(establecimiento_id)),",
-						"          establecimiento_id = concat('BJA-', toString(establecimiento_id)),",
-						"          sistema_origen = 'BJA') ~> derivedColumn7",
-						"derivedColumn6 derive(inscripcion_id = concat('SUP-', toString(inscripcion_id)),",
-						"          establecimiento_id = concat('SUP-', toString(establecimiento_id)),",
-						"          sistema_origen = 'SUP') ~> derivedColumn8",
-						"derivedColumn7, derivedColumn8 union(byName: true)~> union1",
-						"union1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          inscripcion_id as string,",
-						"          ci_beneficiaria as string,",
-						"          establecimiento_id as string,",
-						"          fecha_inscripcion as date,",
-						"          semana_gestacion as integer,",
-						"          estado as string,",
-						"          sistema_origen as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_establecimientos_salud')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "bja_establecimientos_salud_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source3"
-						},
-						{
-							"dataset": {
-								"referenceName": "sup_establecimientos_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source4"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "silver_establecimientos_salud",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn4"
-						},
-						{
-							"name": "derivedColumn5"
-						},
-						{
-							"name": "derivedColumn6"
-						},
-						{
-							"name": "union1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          establecimiento_id as string,",
-						"          codigo_snis as string,",
-						"          nombre as string,",
-						"          tipo as string,",
-						"          nivel_atencion as string,",
-						"          municipio as string,",
-						"          departamento as string,",
-						"          red_salud as string,",
-						"          estado as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source3",
-						"source(output(",
-						"          establecimiento_id as string,",
-						"          codigo_snis as string,",
-						"          nombre as string,",
-						"          tipo as string,",
-						"          nivel_atencion as string,",
-						"          municipio as string,",
-						"          departamento as string,",
-						"          red_salud as string,",
-						"          estado as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source4",
-						"source3 derive(codigo_snis = upper(trim(codigo_snis)),",
-						"          nombre = trim(regexReplace(nombre, '\\\\s+', ' ')),",
-						"          tipo = iif(like(lower(trim(tipo)), '%hospital%'), 'Hospital',\r",
-						"  iif(like(lower(trim(tipo)), '%centro%'), 'Centro de Salud',\r",
-						"    iif(like(lower(trim(tipo)), '%puesto%'), 'Puesto de Salud',\r",
-						"      initCap(lower(trim(tipo)))\r",
-						"    )\r",
-						"  )\r",
-						"),",
-						"          nivel_atencion = iif(like(lower(trim(nivel_atencion)), '%primer%'), 'Primer Nivel',   iif(like(lower(trim(nivel_atencion)), '%segundo%'), 'Segundo Nivel',     iif(like(lower(trim(nivel_atencion)), '%tercer%'), 'Tercer Nivel',       initCap(lower(trim(nivel_atencion)))     )   ) ),",
-						"          departamento = iif(trim(departamento) == 'LP', 'La Paz',   iif(trim(departamento) == 'CB', 'Cochabamba',     iif(trim(departamento) == 'SC', 'Santa Cruz',       iif(trim(departamento) == 'OR', 'Oruro',         iif(trim(departamento) == 'PT', 'Potosí',           iif(trim(departamento) == 'TJ', 'Tarija',             iif(trim(departamento) == 'CH', 'Chuquisaca',               iif(trim(departamento) == 'BN', 'Beni',                 iif(trim(departamento) == 'PD', 'Pando',                   trim(departamento)                 )               )             )           )         )       )     )   ) ),",
-						"          estado = iif(like(lower(trim(estado)), '%activo%'), 'Activo',   iif(like(lower(trim(estado)), '%inactivo%'), 'Inactivo',     initCap(lower(trim(estado)))   ) )) ~> derivedColumn4",
-						"derivedColumn4 derive(establecimiento_id = concat('BJA-', toString(establecimiento_id)),",
-						"          sistema_origen = 'BJA') ~> derivedColumn5",
-						"source4 derive(nombre = trim(nombre),",
-						"          tipo = trim(tipo),",
-						"          establecimiento_id = concat('SUP-', toString(establecimiento_id)),",
-						"          sistema_origen = 'SUP') ~> derivedColumn6",
-						"derivedColumn5, derivedColumn6 union(byName: true)~> union1",
-						"union1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          establecimiento_id as string,",
-						"          codigo_snis as string,",
-						"          nombre as string,",
-						"          tipo as string,",
-						"          nivel_atencion as string,",
-						"          municipio as string,",
-						"          departamento as string,",
-						"          red_salud as string,",
-						"          estado as string,",
-						"          sistema_origen as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bja_controles_prenatales_csv')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "df_bja"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "bja_controles_prenatales_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source2"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "silver_bja_controles_prenatales",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn2"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          control_prenatal_id as string,",
-						"          ci_beneficiaria as string,",
-						"          establecimiento_id as string,",
-						"          nro_control as string,",
-						"          fecha_control as string,",
-						"          semana_gestacion as string,",
-						"          peso_madre_kg as string,",
-						"          presion_arterial as string,",
-						"          resultado as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source2",
-						"source2 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
-						"          fecha_control = toDate(   iif(like(fecha_control, '__/__/____'),     iif(toInteger(left(fecha_control,2)) > 12,       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       concat(right(fecha_control,4), '-', left(fecha_control,2), '-', substring(fecha_control,4,2))     ),     iif(like(fecha_control, '__-__-____'),       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       fecha_control     )   ),   'yyyy-MM-dd' ),",
-						"          presion_arterial = trim(regexReplace(presion_arterial, '\\\\s+', '')),",
-						"          resultado = iif(isNull(trim(resultado)) || length(trim(resultado)) == 0,   'Sin Dato',   iif(like(lower(trim(resultado)), '%normal%'),     'Normal',     iif(like(lower(trim(resultado)), '%riesgo alto%') || like(lower(trim(resultado)), '%riesg%alto%'),       'Riesgo Alto',       iif(like(lower(trim(resultado)), '%riesgo moderado%'),         'Riesgo Moderado',         iif(like(lower(trim(resultado)), '%riesgo bajo%') || like(lower(trim(resultado)), '%riesgoo bajo%'),           'Riesgo Bajo',           initCap(lower(trim(resultado)))         )       )     )   ) ),",
-						"          peso_madre_kg = toFloat(peso_madre_kg),",
-						"          semana_gestacion = toInteger(semana_gestacion),",
-						"          nro_control = toInteger(nro_control),",
-						"          control_id = control_prenatal_id) ~> derivedColumn2",
-						"derivedColumn2 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          ci_beneficiaria,",
-						"          fecha_control,",
-						"          presion_arterial,",
-						"          resultado,",
-						"          peso_madre_kg,",
-						"          semana_gestacion,",
-						"          nro_control,",
-						"          control_id",
-						"     )) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bja_controles_pediatricos_csv')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "df_bja"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "bja_controles_pediatricos_csv",
+								"referenceName": "as_almacenes_csv",
 								"type": "DatasetReference"
 							},
 							"name": "source1"
@@ -690,7 +89,7 @@
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "silver_bja_controles_pediatricos",
+								"referenceName": "silver_as_almacenes",
 								"type": "DatasetReference"
 							},
 							"name": "sink1"
@@ -699,51 +98,38 @@
 					"transformations": [
 						{
 							"name": "derivedColumn1"
-						},
-						{
-							"name": "derivedColumn3"
 						}
 					],
 					"scriptLines": [
 						"source(output(",
-						"          control_pediatrico_id as string,",
-						"          ci_nino as string,",
-						"          ci_madre as string,",
-						"          establecimiento_id as string,",
-						"          nro_control as string,",
-						"          fecha_control as string,",
-						"          peso_nino_kg as string,",
-						"          talla_nino_cm as string,",
-						"          vacuna_aplicada as string,",
-						"          resultado as string",
+						"          almacen_id as string,",
+						"          nombre as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          direccion as string,",
+						"          capacidad_m3 as string,",
+						"          estado as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false) ~> source1",
-						"source1 derive(resultado = upper(regexReplace(resultado, '\\\\s+', '')),",
-						"          vacuna_aplicada = upper(regexReplace(vacuna_aplicada, '\\\\s+', '')),",
-						"          ci_nino = upper(trim(regexReplace(ci_nino, '[^a-zA-Z0-9]', ''))),",
-						"          ci_madre = upper(trim(regexReplace(ci_madre, '[^a-zA-Z0-9]', ''))),",
-						"          establecimiento_id = toInteger(establecimiento_id),",
-						"          fecha_control = toDate(   iif(like(fecha_control, '__/__/____'),     iif(toInteger(left(fecha_control,2)) > 12,       fecha_control,       concat(substring(fecha_control,4,2), '/', left(fecha_control,2), '/', right(fecha_control,4))     ),     iif(like(fecha_control, '__-__-____'),       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       fecha_control     )   ),   'yyyy-MM-dd' )) ~> derivedColumn1",
-						"derivedColumn1 derive(vacuna_aplicada = lower(trim(regexReplace(vacuna_aplicada, '\\\\s+', ' '))),",
-						"          resultado = iif(isNull(trim(resultado)) || length(trim(resultado)) == 0,  'Sin Dato',  iif(lower(trim(resultado)) == 'normal' || lower(trim(resultado)) == 'norml' || lower(trim(resultado)) == 'normaal' || lower(trim(resultado)) == 'noraml' || lower(trim(resultado)) == 'norrmal' || lower(trim(resultado)) == 'nromal',    'Normal',    iif(lower(trim(resultado)) == 'bajo peso' || lower(trim(resultado)) == 'baja peso',      'Bajo Peso',      iif(like(lower(trim(resultado)), '%desnutri%leve%'),        'Desnutrición Leve',        iif(like(lower(trim(resultado)), '%desnutri%moderada%'),          'Desnutrición Moderada',          initCap(lower(trim(resultado)))        )      )    )  )),",
-						"          nro_control = toInteger(nro_control),",
-						"          peso_nino_kg = toDecimal(peso_nino_kg),",
-						"          talla_nino_cm = toDecimal(talla_nino_cm)) ~> derivedColumn3",
-						"derivedColumn3 sink(allowSchemaDrift: true,",
+						"source1 derive(almacen_id = toInteger(almacen_id),",
+						"          nombre = trim(nombre),",
+						"          municipio = trim(municipio),",
+						"          departamento = trim(upper(departamento)),",
+						"          direccion = trim(direccion),",
+						"          capacidad_m3 = toDecimal(trim(capacidad_m3)),",
+						"          estado = iif(isNull(estado) || trim(estado)=='', 'Desconocido', trim(estado))) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
-						"          control_pediatrico_id as string,",
-						"          ci_nino as string,",
-						"          ci_madre as string,",
-						"          establecimiento_id as integer,",
-						"          nro_control as integer,",
-						"          fecha_control as date,",
-						"          peso_nino_kg as decimal(5,2),",
-						"          talla_nino_cm as decimal(5,2),",
-						"          vacuna_aplicada as string,",
-						"          resultado as string",
+						"          almacen_id as integer,",
+						"          nombre as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          direccion as string,",
+						"          capacidad_m3 as decimal(10,2),",
+						"          estado as string",
 						"     ),",
 						"     deletable:false,",
 						"     insertable:true,",
@@ -755,107 +141,14 @@
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
-						"          control_pediatrico_id,",
-						"          ci_nino,",
-						"          ci_madre,",
-						"          establecimiento_id,",
-						"          nro_control,",
-						"          fecha_control,",
-						"          peso_nino_kg,",
-						"          talla_nino_cm,",
-						"          vacuna_aplicada,",
-						"          resultado",
+						"          almacen_id,",
+						"          nombre,",
+						"          municipio,",
+						"          departamento,",
+						"          direccion,",
+						"          capacidad_m3,",
+						"          estado",
 						"     )) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_bja_pagos_csv')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "df_bja"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "bja_pagos_csv",
-								"type": "DatasetReference"
-							},
-							"name": "source5"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "silver_bja_pagos",
-								"type": "DatasetReference"
-							},
-							"name": "sink5"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn6"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          pago_id as string,",
-						"          ci_beneficiaria as string,",
-						"          concepto_pago as string,",
-						"          monto_bs as string,",
-						"          fecha_pago as string,",
-						"          estado_pago as string,",
-						"          canal_pago as string,",
-						"          nro_comprobante as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> source5",
-						"source5 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
-						"          concepto_pago = iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%prenatal%1%') || like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%rpenatal%1%') || like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%prental%1%'),   'Control Prenatal 1',   iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%2%'),     'Control Prenatal 2',     iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%3%'),       'Control Prenatal 3',       iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%4%'),         'Control Prenatal 4',         iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%parto%'),           'Parto Institucional',           initCap(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))))         )       )     )   ) ),",
-						"          monto_bs = iif(toDecimal(monto_bs) == 50 || toDecimal(monto_bs) == 120, toDecimal(monto_bs), toDecimal(null())),",
-						"          fecha_pago = toDate(   iif(like(fecha_pago, '__/__/____'),     iif(toInteger(left(fecha_pago,2)) > 12,       concat(right(fecha_pago,4), '-', substring(fecha_pago,4,2), '-', left(fecha_pago,2)),       concat(right(fecha_pago,4), '-', left(fecha_pago,2), '-', substring(fecha_pago,4,2))     ),     iif(like(fecha_pago, '__-__-____'),       concat(right(fecha_pago,4), '-', substring(fecha_pago,4,2), '-', left(fecha_pago,2)),       fecha_pago     )   ),   'yyyy-MM-dd' ),",
-						"          estado_pago = iif(like(lower(trim(estado_pago)), '%pagado%'), 'Pagado',   iif(like(lower(trim(estado_pago)), '%pendiente%'), 'Pendiente',     iif(like(lower(trim(estado_pago)), '%anulado%'), 'Anulado',       initCap(lower(trim(estado_pago)))     )   ) ),",
-						"          canal_pago = iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bancounion%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bancounión%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bncounión%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%banounión%'),   'Banco Unión',   iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transferencia%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transfencia%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transferencía%'),     'Transferencia Bancaria',     iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pagomóvil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pagomovil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%paomóvil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pgomóvil%'),       'Pago Móvil',       iif(isNull(trim(canal_pago)) || length(trim(canal_pago)) == 0,         'Sin Dato',         initCap(lower(trim(canal_pago)))       )     )   ) ),",
-						"          nro_comprobante = iif(isNull(trim(nro_comprobante)) || length(trim(nro_comprobante)) == 0, 'Sin Comprobante', upper(trim(nro_comprobante)))) ~> derivedColumn6",
-						"derivedColumn6 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          pago_id as string,",
-						"          ci_beneficiaria as string,",
-						"          concepto_pago as string,",
-						"          monto_bs as decimal(10,2),",
-						"          fecha_pago as date,",
-						"          estado_pago as string,",
-						"          canal_pago as string,",
-						"          nro_comprobante as string",
-						"     ),",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     truncate:true,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError',",
-						"     mapColumn(",
-						"          pago_id,",
-						"          ci_beneficiaria,",
-						"          concepto_pago,",
-						"          monto_bs,",
-						"          fecha_pago,",
-						"          estado_pago,",
-						"          canal_pago,",
-						"          nro_comprobante",
-						"     )) ~> sink5"
 					]
 				}
 			},
@@ -1364,911 +657,1616 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline cargar AS')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/df_bja_controles_pediatricos_csv')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "as_transportista",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_as_transportistas_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source4": {},
-									"sink4": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "as_vehiculos",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "as_transportista",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_as_vehiculos_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source5": {},
-									"sink5": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_as_almacenes",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_as_almacenes_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_as_recepciones",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "as_transportista",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "df_as_almacenes",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "as_vehiculos",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_as_recepciones_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source3": {},
-									"sink3": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_as_despachos",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "df_as_almacenes",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "as_transportista",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "as_vehiculos",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "df_as_recepciones",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_as_almacenes_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
+				"folder": {
+					"name": "df_bja"
 				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_as_transportistas_csv')]",
-				"[concat(variables('factoryId'), '/dataflows/df_as_vehiculos_csv')]",
-				"[concat(variables('factoryId'), '/dataflows/df_as_recepciones_csv')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1 cargar spl')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "df_spl_afiliaciones",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "Data flow1",
-								"dependencyConditions": [
-									"Completed"
-								]
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "bja_controles_pediatricos_csv",
+								"type": "DatasetReference"
 							},
-							{
-								"activity": "Data flow2",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_spl_afiliaciones_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								},
-								"linkedServiceParameters": {}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
+							"name": "source1"
 						}
-					},
-					{
-						"name": "spl_certificados_medicos_csv",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "df_spl_afiliaciones",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_spl_certificados_medicos_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source4": {},
-									"sink4": {}
-								}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "silver_bja_controles_pediatricos",
+								"type": "DatasetReference"
 							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
+							"name": "sink1"
 						}
-					},
-					{
-						"name": "pl_asignaciones_mensuales",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "df_spl_afiliaciones",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
 						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_spl_asignaciones_mensuales_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source2": {},
-									"sink2": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
+						{
+							"name": "derivedColumn3"
 						}
-					},
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_spl_cajas_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source3": {},
-									"sink3": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "Data flow2",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_spl_empleadores_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source5": {},
-									"sink5": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "Data flow3",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "pl_asignaciones_mensuales",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_spl_entregas_agencia_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source6": {},
-									"sink6": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "Data flow4",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "pl_asignaciones_mensuales",
-								"dependencyConditions": [
-									"Completed"
-								]
-							},
-							{
-								"activity": "Data flow5",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_spl_entregas_supermercado_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source7": {},
-									"sink7": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "Data flow5",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_spl_supermercados_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source6": {},
-									"sink6": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_spl_empleadores_csv')]",
-				"[concat(variables('factoryId'), '/dataflows/df_spl_entregas_agencia_csv')]",
-				"[concat(variables('factoryId'), '/dataflows/df_spl_entregas_supermercado_csv')]",
-				"[concat(variables('factoryId'), '/dataflows/df_spl_supermercados_csv')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline crear bja')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "df_bja_controles_prenatales_csv",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_bja_controles_prenatales_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source2": {},
-									"sink1": {}
-								},
-								"linkedServiceParameters": {}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_bja_partos_cv",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_bja_partos_cv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source6": {},
-									"sink6": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_bja_controles_pediatricos_csv",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "df_bja_partos_cv",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_bja_controles_pediatricos_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_bja_pagos_csv",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_bja_pagos_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source5": {},
-									"sink5": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_bja_controles_prenatales_csv')]",
-				"[concat(variables('factoryId'), '/dataflows/df_bja_controles_pediatricos_csv')]",
-				"[concat(variables('factoryId'), '/dataflows/df_bja_pagos_csv')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline cargar sup')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "df_sup_catalogo_paquetes",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_sup_catalogo_paquetes",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source2": {},
-									"sink2": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_sup_controles",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_sup_controles",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source3": {},
-									"sink3": {}
-								},
-								"linkedServiceParameters": {}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_sup_boletas",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "df_sup_controles",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_sup_boletas",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "df_sup_entregas_csv",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "df_sup_boletas",
-								"dependencyConditions": [
-									"Completed"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_sup_entregas_csv",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source4": {},
-									"sink4": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
+					],
+					"scriptLines": [
+						"source(output(",
+						"          control_pediatrico_id as string,",
+						"          ci_nino as string,",
+						"          ci_madre as string,",
+						"          establecimiento_id as string,",
+						"          nro_control as string,",
+						"          fecha_control as string,",
+						"          peso_nino_kg as string,",
+						"          talla_nino_cm as string,",
+						"          vacuna_aplicada as string,",
+						"          resultado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 derive(resultado = upper(regexReplace(resultado, '\\\\s+', '')),",
+						"          vacuna_aplicada = upper(regexReplace(vacuna_aplicada, '\\\\s+', '')),",
+						"          ci_nino = upper(trim(regexReplace(ci_nino, '[^a-zA-Z0-9]', ''))),",
+						"          ci_madre = upper(trim(regexReplace(ci_madre, '[^a-zA-Z0-9]', ''))),",
+						"          fecha_control = toDate(   iif(like(fecha_control, '__/__/____'),     iif(toInteger(left(fecha_control,2)) > 12,       fecha_control,       concat(substring(fecha_control,4,2), '/', left(fecha_control,2), '/', right(fecha_control,4))     ),     iif(like(fecha_control, '__-__-____'),       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       fecha_control     )   ),   'yyyy-MM-dd' )) ~> derivedColumn1",
+						"derivedColumn1 derive(vacuna_aplicada = lower(trim(regexReplace(vacuna_aplicada, '\\\\s+', ' '))),",
+						"          resultado = iif(isNull(trim(resultado)) || length(trim(resultado)) == 0,  'Sin Dato',  iif(lower(trim(resultado)) == 'normal' || lower(trim(resultado)) == 'norml' || lower(trim(resultado)) == 'normaal' || lower(trim(resultado)) == 'noraml' || lower(trim(resultado)) == 'norrmal' || lower(trim(resultado)) == 'nromal',    'Normal',    iif(lower(trim(resultado)) == 'bajo peso' || lower(trim(resultado)) == 'baja peso',      'Bajo Peso',      iif(like(lower(trim(resultado)), '%desnutri%leve%'),        'Desnutrición Leve',        iif(like(lower(trim(resultado)), '%desnutri%moderada%'),          'Desnutrición Moderada',          initCap(lower(trim(resultado)))        )      )    )  )),",
+						"          nro_control = toInteger(nro_control),",
+						"          peso_nino_kg = toDecimal(peso_nino_kg),",
+						"          talla_nino_cm = toDecimal(talla_nino_cm),",
+						"          control_pediatrico_id = concat('BJA-', toString(control_pediatrico_id)),",
+						"          establecimiento_id = concat('BJA-', toString(toInteger(establecimiento_id)))) ~> derivedColumn3",
+						"derivedColumn3 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          control_pediatrico_id as string,",
+						"          ci_nino as string,",
+						"          ci_madre as string,",
+						"          establecimiento_id as integer,",
+						"          nro_control as integer,",
+						"          fecha_control as date,",
+						"          peso_nino_kg as decimal(5,2),",
+						"          talla_nino_cm as decimal(5,2),",
+						"          vacuna_aplicada as string,",
+						"          resultado as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          control_pediatrico_id,",
+						"          ci_nino,",
+						"          ci_madre,",
+						"          establecimiento_id,",
+						"          nro_control,",
+						"          fecha_control,",
+						"          peso_nino_kg,",
+						"          talla_nino_cm,",
+						"          vacuna_aplicada,",
+						"          resultado",
+						"     )) ~> sink1"
+					]
+				}
 			},
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/df_bja_controles_prenatales_csv')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_establecimientos_salud",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source3": {},
-									"source4": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					},
-					{
-						"name": "Data flow2",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "Data flow1",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_inscripciones_prenatal",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source4": {},
-									"source5": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
+				"folder": {
+					"name": "df_bja"
 				},
-				"annotations": []
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "bja_controles_prenatales_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "silver_bja_controles_prenatales",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn2"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          control_prenatal_id as string,",
+						"          ci_beneficiaria as string,",
+						"          establecimiento_id as string,",
+						"          nro_control as string,",
+						"          fecha_control as string,",
+						"          semana_gestacion as string,",
+						"          peso_madre_kg as string,",
+						"          presion_arterial as string,",
+						"          resultado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source2",
+						"source2 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+						"          fecha_control = toDate(   iif(like(fecha_control, '__/__/____'),     iif(toInteger(left(fecha_control,2)) > 12,       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       concat(right(fecha_control,4), '-', left(fecha_control,2), '-', substring(fecha_control,4,2))     ),     iif(like(fecha_control, '__-__-____'),       concat(right(fecha_control,4), '-', substring(fecha_control,4,2), '-', left(fecha_control,2)),       fecha_control     )   ),   'yyyy-MM-dd' ),",
+						"          presion_arterial = trim(regexReplace(presion_arterial, '\\\\s+', '')),",
+						"          resultado = iif(isNull(trim(resultado)) || length(trim(resultado)) == 0,   'Sin Dato',   iif(like(lower(trim(resultado)), '%normal%'),     'Normal',     iif(like(lower(trim(resultado)), '%riesgo alto%') || like(lower(trim(resultado)), '%riesg%alto%'),       'Riesgo Alto',       iif(like(lower(trim(resultado)), '%riesgo moderado%'),         'Riesgo Moderado',         iif(like(lower(trim(resultado)), '%riesgo bajo%') || like(lower(trim(resultado)), '%riesgoo bajo%'),           'Riesgo Bajo',           initCap(lower(trim(resultado)))         )       )     )   ) ),",
+						"          peso_madre_kg = toFloat(peso_madre_kg),",
+						"          semana_gestacion = toInteger(semana_gestacion),",
+						"          nro_control = toInteger(nro_control),",
+						"          control_id = control_prenatal_id) ~> derivedColumn2",
+						"derivedColumn2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ci_beneficiaria,",
+						"          fecha_control,",
+						"          presion_arterial,",
+						"          resultado,",
+						"          peso_madre_kg,",
+						"          semana_gestacion,",
+						"          nro_control,",
+						"          control_id",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_bja_pagos_csv')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "df_bja"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "bja_pagos_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source5"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "silver_bja_pagos",
+								"type": "DatasetReference"
+							},
+							"name": "sink5"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn6"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          pago_id as string,",
+						"          ci_beneficiaria as string,",
+						"          concepto_pago as string,",
+						"          monto_bs as string,",
+						"          fecha_pago as string,",
+						"          estado_pago as string,",
+						"          canal_pago as string,",
+						"          nro_comprobante as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source5",
+						"source5 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+						"          concepto_pago = iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%prenatal%1%') || like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%rpenatal%1%') || like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%prental%1%'),   'Control Prenatal 1',   iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%2%'),     'Control Prenatal 2',     iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%3%'),       'Control Prenatal 3',       iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%control%4%'),         'Control Prenatal 4',         iif(like(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))), '%parto%'),           'Parto Institucional',           initCap(lower(trim(regexReplace(concepto_pago, '\\\\s+', ' '))))         )       )     )   ) ),",
+						"          monto_bs = iif(toDecimal(monto_bs) == 50 || toDecimal(monto_bs) == 120, toDecimal(monto_bs), toDecimal(null())),",
+						"          fecha_pago = toDate(   iif(like(fecha_pago, '__/__/____'),     iif(toInteger(left(fecha_pago,2)) > 12,       concat(right(fecha_pago,4), '-', substring(fecha_pago,4,2), '-', left(fecha_pago,2)),       concat(right(fecha_pago,4), '-', left(fecha_pago,2), '-', substring(fecha_pago,4,2))     ),     iif(like(fecha_pago, '__-__-____'),       concat(right(fecha_pago,4), '-', substring(fecha_pago,4,2), '-', left(fecha_pago,2)),       fecha_pago     )   ),   'yyyy-MM-dd' ),",
+						"          estado_pago = iif(like(lower(trim(estado_pago)), '%pagado%'), 'Pagado',   iif(like(lower(trim(estado_pago)), '%pendiente%'), 'Pendiente',     iif(like(lower(trim(estado_pago)), '%anulado%'), 'Anulado',       initCap(lower(trim(estado_pago)))     )   ) ),",
+						"          canal_pago = iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bancounion%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bancounión%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%bncounión%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%banounión%'),   'Banco Unión',   iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transferencia%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transfencia%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%transferencía%'),     'Transferencia Bancaria',     iif(like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pagomóvil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pagomovil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%paomóvil%') || like(lower(trim(regexReplace(canal_pago, '\\\\s+', ''))), '%pgomóvil%'),       'Pago Móvil',       iif(isNull(trim(canal_pago)) || length(trim(canal_pago)) == 0,         'Sin Dato',         initCap(lower(trim(canal_pago)))       )     )   ) ),",
+						"          nro_comprobante = iif(isNull(trim(nro_comprobante)) || length(trim(nro_comprobante)) == 0, 'Sin Comprobante', upper(trim(nro_comprobante)))) ~> derivedColumn6",
+						"derivedColumn6 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          pago_id as string,",
+						"          ci_beneficiaria as string,",
+						"          concepto_pago as string,",
+						"          monto_bs as decimal(10,2),",
+						"          fecha_pago as date,",
+						"          estado_pago as string,",
+						"          canal_pago as string,",
+						"          nro_comprobante as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          pago_id,",
+						"          ci_beneficiaria,",
+						"          concepto_pago,",
+						"          monto_bs,",
+						"          fecha_pago,",
+						"          estado_pago,",
+						"          canal_pago,",
+						"          nro_comprobante",
+						"     )) ~> sink5"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_bja_partos_cv')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "df_bja"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "bja_partos_cv",
+								"type": "DatasetReference"
+							},
+							"name": "source6"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "silver_bja_partos",
+								"type": "DatasetReference"
+							},
+							"name": "sink6"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn7"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          parto_id as string,",
+						"          ci_madre as string,",
+						"          ci_recien_nacido as string,",
+						"          establecimiento_id as string,",
+						"          fecha_parto as string,",
+						"          tipo_parto as string,",
+						"          peso_nacimiento_kg as string,",
+						"          talla_nacimiento_cm as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source6",
+						"source6 derive(ci_madre = upper(trim(regexReplace(ci_madre, '[^a-zA-Z0-9]', ''))),",
+						"          ci_recien_nacido = upper(trim(regexReplace(ci_recien_nacido, '[^a-zA-Z0-9]', ''))),",
+						"          fecha_parto = toDate(   iif(like(fecha_parto, '__/__/____'),     iif(toInteger(left(fecha_parto,2)) > 12,       concat(right(fecha_parto,4), '-', substring(fecha_parto,4,2), '-', left(fecha_parto,2)),       concat(right(fecha_parto,4), '-', left(fecha_parto,2), '-', substring(fecha_parto,4,2))     ),     iif(like(fecha_parto, '__-__-____'),       concat(right(fecha_parto,4), '-', substring(fecha_parto,4,2), '-', left(fecha_parto,2)),       fecha_parto     )   ),   'yyyy-MM-dd' ),",
+						"          tipo_parto = iif(like(lower(trim(tipo_parto)), '%natural%') || lower(trim(tipo_parto)) == 'naturl' || lower(trim(tipo_parto)) == 'ntural' || lower(trim(tipo_parto)) == 'naural' || lower(trim(tipo_parto)) == 'natral' || lower(trim(tipo_parto)) == 'natual' || lower(trim(tipo_parto)) == 'natuarl',   'Natural',   iif(like(lower(trim(tipo_parto)), '%ces%rea%') || like(lower(trim(tipo_parto)), '%cse%rea%'),     'Cesárea',     iif(isNull(trim(tipo_parto)) || length(trim(tipo_parto)) == 0,       'Sin Dato',       initCap(lower(trim(tipo_parto)))     )   ) ),",
+						"          peso_nacimiento_kg = iif(toDecimal(peso_nacimiento_kg) < 0.5 || toDecimal(peso_nacimiento_kg) > 6, toDecimal(null()), toDecimal(peso_nacimiento_kg)),",
+						"          talla_nacimiento_cm = iif(toDecimal(talla_nacimiento_cm) < 30 || toDecimal(talla_nacimiento_cm) > 60, toDecimal(null()), toDecimal(talla_nacimiento_cm)),",
+						"          establecimiento_id = toInteger(establecimiento_id)) ~> derivedColumn7",
+						"derivedColumn7 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          parto_id as string,",
+						"          ci_madre as string,",
+						"          ci_recien_nacido as string,",
+						"          establecimiento_id as integer,",
+						"          fecha_parto as date,",
+						"          tipo_parto as string,",
+						"          peso_nacimiento_kg as decimal(5,2),",
+						"          talla_nacimiento_cm as decimal(5,2)",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          parto_id,",
+						"          ci_madre,",
+						"          ci_recien_nacido,",
+						"          establecimiento_id,",
+						"          fecha_parto,",
+						"          tipo_parto,",
+						"          peso_nacimiento_kg,",
+						"          talla_nacimiento_cm",
+						"     )) ~> sink6"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_establecimientos_salud')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "bja_establecimientos_salud_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source3"
+						},
+						{
+							"dataset": {
+								"referenceName": "sup_establecimientos_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source4"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "silver_establecimientos_salud",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn4"
+						},
+						{
+							"name": "derivedColumn5"
+						},
+						{
+							"name": "derivedColumn6"
+						},
+						{
+							"name": "union1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          establecimiento_id as string,",
+						"          codigo_snis as string,",
+						"          nombre as string,",
+						"          tipo as string,",
+						"          nivel_atencion as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          red_salud as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source3",
+						"source(output(",
+						"          establecimiento_id as string,",
+						"          codigo_snis as string,",
+						"          nombre as string,",
+						"          tipo as string,",
+						"          nivel_atencion as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          red_salud as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source4",
+						"source3 derive(codigo_snis = upper(trim(codigo_snis)),",
+						"          nombre = trim(regexReplace(nombre, '\\\\s+', ' ')),",
+						"          tipo = iif(like(lower(trim(tipo)), '%hospital%'), 'Hospital',\r",
+						"  iif(like(lower(trim(tipo)), '%centro%'), 'Centro de Salud',\r",
+						"    iif(like(lower(trim(tipo)), '%puesto%'), 'Puesto de Salud',\r",
+						"      initCap(lower(trim(tipo)))\r",
+						"    )\r",
+						"  )\r",
+						"),",
+						"          nivel_atencion = iif(like(lower(trim(nivel_atencion)), '%primer%'), 'Primer Nivel',   iif(like(lower(trim(nivel_atencion)), '%segundo%'), 'Segundo Nivel',     iif(like(lower(trim(nivel_atencion)), '%tercer%'), 'Tercer Nivel',       initCap(lower(trim(nivel_atencion)))     )   ) ),",
+						"          departamento = iif(trim(departamento) == 'LP', 'La Paz',   iif(trim(departamento) == 'CB', 'Cochabamba',     iif(trim(departamento) == 'SC', 'Santa Cruz',       iif(trim(departamento) == 'OR', 'Oruro',         iif(trim(departamento) == 'PT', 'Potosí',           iif(trim(departamento) == 'TJ', 'Tarija',             iif(trim(departamento) == 'CH', 'Chuquisaca',               iif(trim(departamento) == 'BN', 'Beni',                 iif(trim(departamento) == 'PD', 'Pando',                   trim(departamento)                 )               )             )           )         )       )     )   ) ),",
+						"          estado = iif(like(lower(trim(estado)), '%activo%'), 'Activo',   iif(like(lower(trim(estado)), '%inactivo%'), 'Inactivo',     initCap(lower(trim(estado)))   ) )) ~> derivedColumn4",
+						"derivedColumn4 derive(establecimiento_id = concat('BJA-', toString(establecimiento_id)),",
+						"          sistema_origen = 'BJA') ~> derivedColumn5",
+						"source4 derive(nombre = trim(nombre),",
+						"          tipo = trim(tipo),",
+						"          establecimiento_id = concat('SUP-', toString(establecimiento_id)),",
+						"          sistema_origen = 'SUP',",
+						"          departamento = case(     departamento == 'LP', 'La Paz',     departamento == 'CB', 'Cochabamba',     departamento == 'SC', 'Santa Cruz',     departamento == 'OR', 'Oruro',     departamento == 'PT', 'Potosí',     departamento == 'CH', 'Chuquisaca',     departamento == 'TJ', 'Tarija',     departamento == 'BN', 'Beni',     departamento == 'PD', 'Pando',     departamento )) ~> derivedColumn6",
+						"derivedColumn5, derivedColumn6 union(byName: true)~> union1",
+						"union1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          establecimiento_id as string,",
+						"          codigo_snis as string,",
+						"          nombre as string,",
+						"          tipo as string,",
+						"          nivel_atencion as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          red_salud as string,",
+						"          estado as string,",
+						"          sistema_origen as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_gold_dim_establecimiento')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "silver_establecimientos_salud",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "gold_dim_establecimiento",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          establecimiento_id as string,",
+						"          codigo_snis as string,",
+						"          nombre as string,",
+						"          tipo as string,",
+						"          nivel_atencion as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          red_salud as string,",
+						"          estado as string,",
+						"          sistema_origen as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT DISTINCT\\n    establecimiento_id,\\n    codigo_snis,\\nestado,\\n    nombre,\\n    tipo,\\n    nivel_atencion,\\n    municipio,\\n    departamento,\\n    red_salud,\\n    sistema_origen\\nFROM silver.establecimientos_salud',",
+						"     format: 'query') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          establecimiento_id,",
+						"          codigo_snis,",
+						"          nombre,",
+						"          tipo,",
+						"          nivel_atencion,",
+						"          municipio,",
+						"          departamento,",
+						"          red_salud,",
+						"          estado,",
+						"          sistema_origen",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_gold_dim_paquete')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "gold_dim_paquete",
+								"type": "DatasetReference"
+							},
+							"name": "source1",
+							"description": "Importar datos de gold_dim_paquete"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "gold_dim_paquete",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          paquete_id as integer,",
+						"          nombre as string,",
+						"          peso_estandar_kg as decimal(6,2),",
+						"          costo_estimado_bs as decimal(10,2)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT DISTINCT\\n    paquete_id,\\n    nombre,\\n    peso_estandar_kg,\\n    costo_estimado_bs\\nFROM silver.sup_catalogo_paquetes',",
+						"     format: 'query') ~> source1",
+						"source1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          paquete_id,",
+						"          nombre,",
+						"          peso_estandar_kg,",
+						"          costo_estimado_bs",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_gold_hechos_controles_prenatales')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "silver_bja_controles_prenatales",
+								"type": "DatasetReference"
+							},
+							"name": "controlesprenatales"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_beneficiaria",
+								"type": "DatasetReference"
+							},
+							"name": "dimbeneficiaria"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_establecimiento",
+								"type": "DatasetReference"
+							},
+							"name": "dimestablecimiento"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "gold_hechos_controles_prenatales",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "lookup2"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "derivedColumn2"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          control_id as string,",
+						"          ci_beneficiaria as string,",
+						"          establecimiento_id as string,",
+						"          fecha_control as date,",
+						"          sistema_key as integer,",
+						"          nro_control as integer,",
+						"          semana_gestacion as integer,",
+						"          peso_madre_kg as decimal(5,2),",
+						"          presion_arterial as string,",
+						"          resultado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     query: 'SELECT\\n    CAST(control_id AS VARCHAR(50))                 AS control_id,\\n    ci_beneficiaria,\\n    establecimiento_id,\\n    fecha_control,\\n    1                                                AS sistema_key,\\n    nro_control,\\n    semana_gestacion,\\n    peso_madre_kg,\\n    presion_arterial,\\n    CAST(NULL AS VARCHAR(100))                      AS resultado\\nFROM silver.sup_controles_prenatales\\n\\nUNION ALL\\n\\nSELECT\\n    CAST(control_id AS VARCHAR(50))                 AS control_id,\\n    ci_beneficiaria,\\n    CAST(NULL AS VARCHAR(20))                       AS establecimiento_id,\\n    fecha_control,\\n    2                                                AS sistema_key,\\n    nro_control,\\n    semana_gestacion,\\n    peso_madre_kg,\\n    presion_arterial,\\n    resultado\\nFROM silver.bja_controles_prenatales',",
+						"     format: 'query') ~> controlesprenatales",
+						"source(output(",
+						"          beneficiaria_key as integer,",
+						"          ci_beneficiaria as string,",
+						"          nombres as string,",
+						"          primer_apellido as string,",
+						"          segundo_apellido as string,",
+						"          nombre_completo as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          en_sup as boolean,",
+						"          en_bja as boolean,",
+						"          en_spl as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimbeneficiaria",
+						"source(output(",
+						"          establecimiento_key as integer,",
+						"          establecimiento_id as string,",
+						"          codigo_snis as string,",
+						"          nombre as string,",
+						"          tipo as string,",
+						"          nivel_atencion as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          red_salud as string,",
+						"          sistema_origen as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimestablecimiento",
+						"derivedColumn2, dimbeneficiaria lookup(derivedColumn2@ci_beneficiaria == dimbeneficiaria@ci_beneficiaria,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1, dimestablecimiento lookup(controlesprenatales@establecimiento_id == dimestablecimiento@establecimiento_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup2",
+						"lookup2 derive(tiempo_key = toInteger(toString(fecha_control, 'yyyyMMdd'))) ~> derivedColumn1",
+						"derivedColumn1 select(mapColumn(",
+						"          control_id,",
+						"          sistema_key,",
+						"          nro_control,",
+						"          semana_gestacion,",
+						"          peso_madre_kg,",
+						"          presion_arterial,",
+						"          resultado,",
+						"          beneficiaria_key,",
+						"          ci_beneficiaria = dimbeneficiaria@ci_beneficiaria,",
+						"          nombres,",
+						"          primer_apellido,",
+						"          segundo_apellido,",
+						"          nombre_completo,",
+						"          municipio = dimbeneficiaria@municipio,",
+						"          departamento = dimbeneficiaria@departamento,",
+						"          en_sup,",
+						"          en_bja,",
+						"          en_spl,",
+						"          establecimiento_key,",
+						"          establecimiento_id = dimestablecimiento@establecimiento_id,",
+						"          codigo_snis,",
+						"          nombre,",
+						"          tipo,",
+						"          nivel_atencion,",
+						"          municipio = dimestablecimiento@municipio,",
+						"          departamento = dimestablecimiento@departamento,",
+						"          red_salud,",
+						"          sistema_origen,",
+						"          tiempo_key",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"controlesprenatales derive(ci_beneficiaria = upper(replace(replace(trim(ci_beneficiaria), '-', ''), ' ', ''))) ~> derivedColumn2",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          control_key as integer,",
+						"          control_id as string,",
+						"          beneficiaria_key as integer,",
+						"          establecimiento_key as integer,",
+						"          tiempo_key as integer,",
+						"          sistema_key as integer,",
+						"          nro_control as integer,",
+						"          semana_gestacion as integer,",
+						"          peso_madre_kg as decimal(5,2),",
+						"          presion_arterial as string,",
+						"          resultado as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_hechos_controles_pediatricos')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "silver_bja_controles_pediatricos",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_beneficiaria",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "gold_hechos_controles_pediatricos",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          control_pediatrico_id as string,",
+						"          ci_nino as string,",
+						"          ci_madre as string,",
+						"          establecimiento_id as integer,",
+						"          nro_control as integer,",
+						"          fecha_control as date,",
+						"          peso_nino_kg as decimal(5,2),",
+						"          talla_nino_cm as decimal(5,2),",
+						"          vacuna_aplicada as string,",
+						"          resultado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source1",
+						"source(output(",
+						"          beneficiaria_key as integer,",
+						"          ci_beneficiaria as string,",
+						"          nombres as string,",
+						"          primer_apellido as string,",
+						"          segundo_apellido as string,",
+						"          nombre_completo as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          en_sup as boolean,",
+						"          en_bja as boolean,",
+						"          en_spl as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source2",
+						"source1 derive(control_pediatrico_id = trim(control_pediatrico_id),",
+						"          ci_nino = upper(trim(regexReplace(ci_nino, '^[a-zA-Z]+', ''))),",
+						"          ci_madre = upper(trim(regexReplace(ci_madre, '^[a-zA-Z]+', ''))),",
+						"          {establecimiento_id } = iif(isNull(establecimiento_id) || trim(toString(establecimiento_id)) == '' || trim(toString(establecimiento_id)) == 'NULL', toString(null()), trim(toString(establecimiento_id)))) ~> derivedColumn1",
+						"derivedColumn1, source2 lookup(ci_madre == ci_beneficiaria,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 derive(tiempo_key = iif(isNull(fecha_control), toInteger(null()), toInteger(toString(fecha_control, 'yyyyMMdd')))) ~> derivedColumn2",
+						"derivedColumn2 select(mapColumn(",
+						"          control_pediatrico_id,",
+						"          ci_nino,",
+						"          ci_madre,",
+						"          establecimiento_id,",
+						"          nro_control,",
+						"          fecha_control,",
+						"          peso_nino_kg,",
+						"          talla_nino_cm,",
+						"          vacuna_aplicada,",
+						"          resultado,",
+						"          {establecimiento_id },",
+						"          tiempo_key",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          control_ped_key as integer,",
+						"          control_pediatrico_id as string,",
+						"          beneficiaria_key as integer,",
+						"          ci_nino as string,",
+						"          establecimiento_key as integer,",
+						"          tiempo_key as integer,",
+						"          nro_control as integer,",
+						"          peso_nino_kg as decimal(5,2),",
+						"          talla_nino_cm as decimal(5,2),",
+						"          vacuna_aplicada as string,",
+						"          resultado as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_hechos_entregas_sup')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "silver_sup_entregas",
+								"type": "DatasetReference"
+							},
+							"name": "silversupentregas"
+						},
+						{
+							"dataset": {
+								"referenceName": "silver_sup_catalogo_paquetes",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_beneficiaria",
+								"type": "DatasetReference"
+							},
+							"name": "dimbeneficiaria"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_establecimiento",
+								"type": "DatasetReference"
+							},
+							"name": "dimestablecimiento"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_paquete",
+								"type": "DatasetReference"
+							},
+							"name": "dimpaquete"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "gold_hechos_entregas_sup",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "lookup2"
+						},
+						{
+							"name": "lookup3"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          entrega_id as integer,",
+						"          boleta_id as integer,",
+						"          ci_beneficiaria as string,",
+						"          establecimiento_id as string,",
+						"          paquete_id as integer,",
+						"          paquete_nombre as string,",
+						"          fecha_entrega as date,",
+						"          lote_produccion as string,",
+						"          peso_paquete_kg as decimal(6,2),",
+						"          fecha_proxima_entrega as date",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> silversupentregas",
+						"source(output(",
+						"          paquete_id as integer,",
+						"          nombre as string,",
+						"          contenido as string,",
+						"          peso_estandar_kg as decimal(6,2),",
+						"          costo_estimado_bs as decimal(10,2)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source2",
+						"source(output(",
+						"          beneficiaria_key as integer,",
+						"          ci_beneficiaria as string,",
+						"          nombres as string,",
+						"          primer_apellido as string,",
+						"          segundo_apellido as string,",
+						"          nombre_completo as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          en_sup as boolean,",
+						"          en_bja as boolean,",
+						"          en_spl as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimbeneficiaria",
+						"source(output(",
+						"          establecimiento_key as integer,",
+						"          establecimiento_id as string,",
+						"          codigo_snis as string,",
+						"          nombre as string,",
+						"          tipo as string,",
+						"          nivel_atencion as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          red_salud as string,",
+						"          sistema_origen as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimestablecimiento",
+						"source(output(",
+						"          paquete_key as integer,",
+						"          paquete_id as integer,",
+						"          nombre as string,",
+						"          peso_estandar_kg as decimal(6,2),",
+						"          costo_estimado_bs as decimal(10,2)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> dimpaquete",
+						"silversupentregas derive(entrega_id = toInteger(entrega_id),",
+						"          ci_beneficiaria = upper(trim(ci_beneficiaria)),",
+						"          {establecimiento_id } = trim(establecimiento_id),",
+						"          paquete_id = toInteger(paquete_id),",
+						"          fecha_entrega = iif(isNull(fecha_entrega) || trim(toString(fecha_entrega)) == '' || trim(toString(fecha_entrega)) == 'NULL', toDate(null()), toDate(toString(fecha_entrega, 'yyyy-MM-dd'))),",
+						"          peso_paquete_kg = iif(isNull(peso_paquete_kg) || trim(toString(peso_paquete_kg)) == '' || trim(toString(peso_paquete_kg)) == 'NULL', toFloat(null()), toFloat(peso_paquete_kg)),",
+						"          fecha_proxima_entrega = iif(isNull(fecha_proxima_entrega) || trim(toString(fecha_proxima_entrega)) == '' || trim(toString(fecha_proxima_entrega)) == 'NULL', toDate(null()), toDate(toString(fecha_proxima_entrega, 'yyyy-MM-dd')))) ~> derivedColumn1",
+						"derivedColumn1, dimbeneficiaria lookup(derivedColumn1@ci_beneficiaria == dimbeneficiaria@ci_beneficiaria,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1, dimestablecimiento lookup({establecimiento_id } == dimestablecimiento@establecimiento_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup2",
+						"lookup2, dimpaquete lookup(derivedColumn1@paquete_id == dimpaquete@paquete_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup3",
+						"lookup3 derive(tiempo_key = toInteger(toString(fecha_entrega, 'yyyyMMdd'))) ~> derivedColumn2",
+						"derivedColumn2 select(mapColumn(",
+						"          entrega_id,",
+						"          boleta_id,",
+						"          ci_beneficiaria = derivedColumn1@ci_beneficiaria,",
+						"          establecimiento_id = silversupentregas@establecimiento_id,",
+						"          paquete_id = derivedColumn1@paquete_id,",
+						"          paquete_nombre,",
+						"          fecha_entrega,",
+						"          lote_produccion,",
+						"          peso_paquete_kg,",
+						"          beneficiaria_key,",
+						"          nombres,",
+						"          primer_apellido,",
+						"          segundo_apellido,",
+						"          nombre_completo,",
+						"          municipio = dimbeneficiaria@municipio,",
+						"          departamento = dimbeneficiaria@departamento,",
+						"          en_sup,",
+						"          en_bja,",
+						"          en_spl,",
+						"          tiempo_key",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          entrega_key as integer,",
+						"          entrega_id as integer,",
+						"          beneficiaria_key as integer,",
+						"          establecimiento_key as integer,",
+						"          paquete_key as integer,",
+						"          tiempo_key as integer,",
+						"          lote_produccion as string,",
+						"          peso_paquete_kg as decimal(6,2),",
+						"          costo_estimado_bs as decimal(10,2),",
+						"          dias_hasta_proxima as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_hechos_pagos_bja')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "gold"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "silver_bja_pagos",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						},
+						{
+							"dataset": {
+								"referenceName": "gold_dim_beneficiaria",
+								"type": "DatasetReference"
+							},
+							"name": "source2"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "gold_hechos_pagos_bja",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          pago_id as string,",
+						"          ci_beneficiaria as string,",
+						"          concepto_pago as string,",
+						"          monto_bs as decimal(10,2),",
+						"          fecha_pago as date,",
+						"          estado_pago as string,",
+						"          canal_pago as string,",
+						"          nro_comprobante as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source1",
+						"source(output(",
+						"          beneficiaria_key as integer,",
+						"          ci_beneficiaria as string,",
+						"          nombres as string,",
+						"          primer_apellido as string,",
+						"          segundo_apellido as string,",
+						"          nombre_completo as string,",
+						"          municipio as string,",
+						"          departamento as string,",
+						"          en_sup as boolean,",
+						"          en_bja as boolean,",
+						"          en_spl as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source2",
+						"source1 derive(pago_id = trim(pago_id),",
+						"          ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '^[a-zA-Z]+', '')))) ~> derivedColumn1",
+						"derivedColumn1, source2 lookup(derivedColumn1@ci_beneficiaria == source2@ci_beneficiaria,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 derive(tiempo_key = iif(isNull(fecha_pago), toInteger(null()), toInteger(toString(fecha_pago, 'yyyyMMdd')))) ~> derivedColumn2",
+						"derivedColumn2 select(mapColumn(",
+						"          pago_id,",
+						"          ci_beneficiaria = derivedColumn1@ci_beneficiaria,",
+						"          concepto_pago,",
+						"          monto_bs,",
+						"          fecha_pago,",
+						"          estado_pago,",
+						"          canal_pago,",
+						"          nro_comprobante,",
+						"          beneficiaria_key,",
+						"          ci_beneficiaria = source2@ci_beneficiaria,",
+						"          nombres,",
+						"          primer_apellido,",
+						"          segundo_apellido,",
+						"          nombre_completo,",
+						"          municipio,",
+						"          departamento,",
+						"          en_sup,",
+						"          en_bja,",
+						"          en_spl,",
+						"          tiempo_key",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          pago_key as integer,",
+						"          pago_id as string,",
+						"          beneficiaria_key as integer,",
+						"          tiempo_key as integer,",
+						"          concepto_pago as string,",
+						"          monto_bs as decimal(10,2),",
+						"          estado_pago as string,",
+						"          canal_pago as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_inscripciones_prenatal')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "bja_inscripciones_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source4"
+						},
+						{
+							"dataset": {
+								"referenceName": "sup_inscripciones_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source5"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "silver_inscripciones_prenatal",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn5"
+						},
+						{
+							"name": "derivedColumn6"
+						},
+						{
+							"name": "derivedColumn7"
+						},
+						{
+							"name": "derivedColumn8"
+						},
+						{
+							"name": "union1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          inscripcion_id as string,",
+						"          ci_beneficiaria as string,",
+						"          establecimiento_id as string,",
+						"          fecha_inscripcion as string,",
+						"          semana_gestacion as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source4",
+						"source(output(",
+						"          inscripcion_id as string,",
+						"          ci_beneficiaria as string,",
+						"          establecimiento_id as string,",
+						"          fecha_inscripcion as string,",
+						"          semana_gestacion as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source5",
+						"source4 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+						"          fecha_inscripcion = toDate(toString(fecha_inscripcion), 'yyyy-MM-dd'),",
+						"          semana_gestacion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion)),",
+						"          estado = iif(like(lower(trim(estado)), '%completada%'), 'Completada',   iif(like(lower(trim(estado)), '%activa%') && !like(lower(trim(estado)), '%in%'), 'Activa',     iif(like(lower(trim(estado)), '%inactiva%'), 'Inactiva',       initCap(lower(trim(estado)))     )   ) )) ~> derivedColumn5",
+						"source5 derive(ci_beneficiaria = trim(toString(ci_beneficiaria)),",
+						"          fecha_inscripcion = toDate(toString(fecha_inscripcion), 'yyyy-MM-dd'),",
+						"          estado = initCap(lower(trim(toString(estado)))),",
+						"          semana_gestacion = iif(toInteger(semana_gestacion) < 1 || toInteger(semana_gestacion) > 42, toInteger(null()), toInteger(semana_gestacion))) ~> derivedColumn6",
+						"derivedColumn5 derive(inscripcion_id = 'BJA-' + toString(inscripcion_id),",
+						"          establecimiento_id = concat('BJA-', toString(establecimiento_id)),",
+						"          sistema_origen = 'BJA') ~> derivedColumn7",
+						"derivedColumn6 derive(inscripcion_id = concat('SUP-', toString(inscripcion_id)),",
+						"          establecimiento_id = concat('SUP-', toString(establecimiento_id)),",
+						"          sistema_origen = 'SUP') ~> derivedColumn8",
+						"derivedColumn7, derivedColumn8 union(byName: true)~> union1",
+						"union1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          inscripcion_id as string,",
+						"          ci_beneficiaria as string,",
+						"          establecimiento_id as string,",
+						"          fecha_inscripcion as date,",
+						"          semana_gestacion as integer,",
+						"          estado as string,",
+						"          sistema_origen as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     truncate:true,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          inscripcion_id,",
+						"          ci_beneficiaria,",
+						"          establecimiento_id,",
+						"          fecha_inscripcion,",
+						"          semana_gestacion,",
+						"          estado,",
+						"          sistema_origen",
+						"     )) ~> sink1"
+					]
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_establecimientos_salud')]",
-				"[concat(variables('factoryId'), '/dataflows/df_inscripciones_prenatal')]"
+				"[concat(variables('factoryId'), '/datasets/sup_inscripciones_csv')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_segip_personas')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "segip_personas_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "silver_segip_personas",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ci as string,",
+						"          nombres as string,",
+						"          apellido_paterno as string,",
+						"          apellido_materno as string,",
+						"          fecha_nacimiento as string,",
+						"          genero as string,",
+						"          estado_civil as string,",
+						"          ci_conyuge as string,",
+						"          numero_hijos as string,",
+						"          ci_padre as string,",
+						"          ci_madre as string,",
+						"          profesion as string,",
+						"          nivel_estudios as string,",
+						"          municipio_residencia as string,",
+						"          fecha_emision as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 derive(numero_hijos = toInteger(numero_hijos),",
+						"          fecha_nacimiento = toDate(fecha_emision, 'yyyy-MM-dd'),",
+						"          fecha_emision = toDate(fecha_nacimiento, 'yyyy-MM-dd')) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          ci as string,",
+						"          nombres as string,",
+						"          apellido_paterno as string,",
+						"          apellido_materno as string,",
+						"          fecha_nacimiento as date,",
+						"          genero as string,",
+						"          estado_civil as string,",
+						"          ci_conyuge as string,",
+						"          numero_hijos as integer,",
+						"          ci_padre as string,",
+						"          ci_madre as string,",
+						"          profesion as string,",
+						"          nivel_estudios as string,",
+						"          municipio_residencia as string,",
+						"          fecha_emision as date",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ci,",
+						"          nombres,",
+						"          apellido_paterno,",
+						"          apellido_materno,",
+						"          fecha_nacimiento,",
+						"          genero,",
+						"          estado_civil,",
+						"          ci_conyuge,",
+						"          numero_hijos,",
+						"          ci_padre,",
+						"          ci_madre,",
+						"          profesion,",
+						"          nivel_estudios,",
+						"          municipio_residencia,",
+						"          fecha_emision",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_spl_afiliaciones_csv')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "df_spl"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "spl_afiliaciones_csv",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "silver_spl_afiliaciones",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          afiliacion_id as string,",
+						"          ci_beneficiaria as string,",
+						"          empleador_id as string,",
+						"          caja_id as string,",
+						"          fecha_afiliacion as string,",
+						"          nro_matricula as string,",
+						"          tipo_subsidio as string,",
+						"          estado as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 derive(ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '[^a-zA-Z0-9]', ''))),",
+						"          fecha_afiliacion = toDate(trim(fecha_afiliacion), 'yyyy-MM-dd'),",
+						"          nro_matricula = upper(trim(nro_matricula)),",
+						"          tipo_subsidio = iif(like(lower(trim(tipo_subsidio)), '%prenatal%'), 'Prenatal',   iif(like(lower(trim(tipo_subsidio)), '%lactancia%'), 'Lactancia',     initCap(lower(trim(tipo_subsidio)))   ) ),",
+						"          estado = iif(like(lower(trim(estado)), '%completada%'), 'Completada',   iif(like(lower(trim(estado)), '%inactiva%'), 'Inactiva',     iif(like(lower(trim(estado)), '%activa%'), 'Activa',       initCap(lower(trim(estado)))     )   ) ),",
+						"          caja_id = toInteger(caja_id)) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          afiliacion_id as string,",
+						"          ci_beneficiaria as string,",
+						"          empleador_id as string,",
+						"          caja_id as integer,",
+						"          fecha_afiliacion as date,",
+						"          nro_matricula as string,",
+						"          tipo_subsidio as string,",
+						"          estado as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          afiliacion_id,",
+						"          ci_beneficiaria,",
+						"          empleador_id,",
+						"          caja_id,",
+						"          fecha_afiliacion,",
+						"          nro_matricula,",
+						"          tipo_subsidio,",
+						"          estado",
+						"     )) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }
