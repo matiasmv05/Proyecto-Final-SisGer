@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1 cargar spl",
+	"name": "pip_crear_spl",
 	"properties": {
 		"activities": [
 			{

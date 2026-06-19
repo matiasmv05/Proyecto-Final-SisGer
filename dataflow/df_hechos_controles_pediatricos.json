@@ -1,0 +1,133 @@
+{
+	"name": "df_hechos_controles_pediatricos",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_beneficiaria",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino as string,",
+				"          ci_madre as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          peso_nino_kg as decimal(5,2),",
+				"          talla_nino_cm as decimal(5,2),",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source(output(",
+				"          beneficiaria_key as integer,",
+				"          ci_beneficiaria as string,",
+				"          nombres as string,",
+				"          primer_apellido as string,",
+				"          segundo_apellido as string,",
+				"          nombre_completo as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          en_sup as boolean,",
+				"          en_bja as boolean,",
+				"          en_spl as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source2",
+				"source1 derive(control_pediatrico_id = trim(control_pediatrico_id),",
+				"          ci_nino = upper(trim(regexReplace(ci_nino, '^[a-zA-Z]+', ''))),",
+				"          ci_madre = upper(trim(regexReplace(ci_madre, '^[a-zA-Z]+', ''))),",
+				"          {establecimiento_id } = iif(isNull(establecimiento_id) || trim(toString(establecimiento_id)) == '' || trim(toString(establecimiento_id)) == 'NULL', toString(null()), trim(toString(establecimiento_id)))) ~> derivedColumn1",
+				"derivedColumn1, source2 lookup(ci_madre == ci_beneficiaria,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 derive(tiempo_key = iif(isNull(fecha_control), toInteger(null()), toInteger(toString(fecha_control, 'yyyyMMdd')))) ~> derivedColumn2",
+				"derivedColumn2 select(mapColumn(",
+				"          control_pediatrico_id,",
+				"          ci_nino,",
+				"          ci_madre,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          peso_nino_kg,",
+				"          talla_nino_cm,",
+				"          vacuna_aplicada,",
+				"          resultado,",
+				"          {establecimiento_id },",
+				"          tiempo_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_ped_key as integer,",
+				"          control_pediatrico_id as string,",
+				"          beneficiaria_key as integer,",
+				"          ci_nino as string,",
+				"          establecimiento_key as integer,",
+				"          tiempo_key as integer,",
+				"          nro_control as integer,",
+				"          peso_nino_kg as decimal(5,2),",
+				"          talla_nino_cm as decimal(5,2),",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

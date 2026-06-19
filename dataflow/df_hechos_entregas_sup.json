@@ -1,0 +1,216 @@
+{
+	"name": "df_hechos_entregas_sup",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "silversupentregas"
+				},
+				{
+					"dataset": {
+						"referenceName": "silver_sup_catalogo_paquetes",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_beneficiaria",
+						"type": "DatasetReference"
+					},
+					"name": "dimbeneficiaria"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_establecimiento",
+						"type": "DatasetReference"
+					},
+					"name": "dimestablecimiento"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_paquete",
+						"type": "DatasetReference"
+					},
+					"name": "dimpaquete"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_entregas_sup",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "lookup2"
+				},
+				{
+					"name": "lookup3"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          entrega_id as integer,",
+				"          boleta_id as integer,",
+				"          ci_beneficiaria as string,",
+				"          establecimiento_id as string,",
+				"          paquete_id as integer,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as date,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as decimal(6,2),",
+				"          fecha_proxima_entrega as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> silversupentregas",
+				"source(output(",
+				"          paquete_id as integer,",
+				"          nombre as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as decimal(6,2),",
+				"          costo_estimado_bs as decimal(10,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source2",
+				"source(output(",
+				"          beneficiaria_key as integer,",
+				"          ci_beneficiaria as string,",
+				"          nombres as string,",
+				"          primer_apellido as string,",
+				"          segundo_apellido as string,",
+				"          nombre_completo as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          en_sup as boolean,",
+				"          en_bja as boolean,",
+				"          en_spl as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimbeneficiaria",
+				"source(output(",
+				"          establecimiento_key as integer,",
+				"          establecimiento_id as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          sistema_origen as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimestablecimiento",
+				"source(output(",
+				"          paquete_key as integer,",
+				"          paquete_id as integer,",
+				"          nombre as string,",
+				"          peso_estandar_kg as decimal(6,2),",
+				"          costo_estimado_bs as decimal(10,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> dimpaquete",
+				"silversupentregas derive(entrega_id = toInteger(entrega_id),",
+				"          ci_beneficiaria = upper(trim(ci_beneficiaria)),",
+				"          {establecimiento_id } = trim(establecimiento_id),",
+				"          paquete_id = toInteger(paquete_id),",
+				"          fecha_entrega = iif(isNull(fecha_entrega) || trim(toString(fecha_entrega)) == '' || trim(toString(fecha_entrega)) == 'NULL', toDate(null()), toDate(toString(fecha_entrega, 'yyyy-MM-dd'))),",
+				"          peso_paquete_kg = iif(isNull(peso_paquete_kg) || trim(toString(peso_paquete_kg)) == '' || trim(toString(peso_paquete_kg)) == 'NULL', toFloat(null()), toFloat(peso_paquete_kg)),",
+				"          fecha_proxima_entrega = iif(isNull(fecha_proxima_entrega) || trim(toString(fecha_proxima_entrega)) == '' || trim(toString(fecha_proxima_entrega)) == 'NULL', toDate(null()), toDate(toString(fecha_proxima_entrega, 'yyyy-MM-dd')))) ~> derivedColumn1",
+				"derivedColumn1, dimbeneficiaria lookup(derivedColumn1@ci_beneficiaria == dimbeneficiaria@ci_beneficiaria,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1, dimestablecimiento lookup({establecimiento_id } == dimestablecimiento@establecimiento_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup2",
+				"lookup2, dimpaquete lookup(derivedColumn1@paquete_id == dimpaquete@paquete_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup3",
+				"lookup3 derive(tiempo_key = toInteger(toString(fecha_entrega, 'yyyyMMdd'))) ~> derivedColumn2",
+				"derivedColumn2 select(mapColumn(",
+				"          entrega_id,",
+				"          boleta_id,",
+				"          ci_beneficiaria = derivedColumn1@ci_beneficiaria,",
+				"          establecimiento_id = silversupentregas@establecimiento_id,",
+				"          paquete_id = derivedColumn1@paquete_id,",
+				"          paquete_nombre,",
+				"          fecha_entrega,",
+				"          lote_produccion,",
+				"          peso_paquete_kg,",
+				"          beneficiaria_key,",
+				"          nombres,",
+				"          primer_apellido,",
+				"          segundo_apellido,",
+				"          nombre_completo,",
+				"          municipio = dimbeneficiaria@municipio,",
+				"          departamento = dimbeneficiaria@departamento,",
+				"          en_sup,",
+				"          en_bja,",
+				"          en_spl,",
+				"          tiempo_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_key as integer,",
+				"          entrega_id as integer,",
+				"          beneficiaria_key as integer,",
+				"          establecimiento_key as integer,",
+				"          paquete_key as integer,",
+				"          tiempo_key as integer,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as decimal(6,2),",
+				"          costo_estimado_bs as decimal(10,2),",
+				"          dias_hasta_proxima as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}

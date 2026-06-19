@@ -29,7 +29,15 @@
 					"name": "dimestablecimiento"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "lookup1"
@@ -140,7 +148,30 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"controlesprenatales derive(ci_beneficiaria = upper(replace(replace(trim(ci_beneficiaria), '-', ''), ' ', ''))) ~> derivedColumn2"
+				"controlesprenatales derive(ci_beneficiaria = upper(replace(replace(trim(ci_beneficiaria), '-', ''), ' ', ''))) ~> derivedColumn2",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_key as integer,",
+				"          control_id as string,",
+				"          beneficiaria_key as integer,",
+				"          establecimiento_key as integer,",
+				"          tiempo_key as integer,",
+				"          sistema_key as integer,",
+				"          nro_control as integer,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(5,2),",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 			]
 		}
 	}

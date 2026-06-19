@@ -1,0 +1,134 @@
+{
+	"name": "df_hechos_pagos_bja",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "gold_dim_beneficiaria",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_hechos_pagos_bja",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          pago_id as string,",
+				"          ci_beneficiaria as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as decimal(10,2),",
+				"          fecha_pago as date,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source(output(",
+				"          beneficiaria_key as integer,",
+				"          ci_beneficiaria as string,",
+				"          nombres as string,",
+				"          primer_apellido as string,",
+				"          segundo_apellido as string,",
+				"          nombre_completo as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          en_sup as boolean,",
+				"          en_bja as boolean,",
+				"          en_spl as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source2",
+				"source1 derive(pago_id = trim(pago_id),",
+				"          ci_beneficiaria = upper(trim(regexReplace(ci_beneficiaria, '^[a-zA-Z]+', '')))) ~> derivedColumn1",
+				"derivedColumn1, source2 lookup(derivedColumn1@ci_beneficiaria == source2@ci_beneficiaria,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 derive(tiempo_key = iif(isNull(fecha_pago), toInteger(null()), toInteger(toString(fecha_pago, 'yyyyMMdd')))) ~> derivedColumn2",
+				"derivedColumn2 select(mapColumn(",
+				"          pago_id,",
+				"          ci_beneficiaria = derivedColumn1@ci_beneficiaria,",
+				"          concepto_pago,",
+				"          monto_bs,",
+				"          fecha_pago,",
+				"          estado_pago,",
+				"          canal_pago,",
+				"          nro_comprobante,",
+				"          beneficiaria_key,",
+				"          ci_beneficiaria = source2@ci_beneficiaria,",
+				"          nombres,",
+				"          primer_apellido,",
+				"          segundo_apellido,",
+				"          nombre_completo,",
+				"          municipio,",
+				"          departamento,",
+				"          en_sup,",
+				"          en_bja,",
+				"          en_spl,",
+				"          tiempo_key",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pago_key as integer,",
+				"          pago_id as string,",
+				"          beneficiaria_key as integer,",
+				"          tiempo_key as integer,",
+				"          concepto_pago as string,",
+				"          monto_bs as decimal(10,2),",
+				"          estado_pago as string,",
+				"          canal_pago as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
